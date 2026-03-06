@@ -7,6 +7,8 @@ import { RefreshCw, WifiOff, Gauge, User } from 'lucide-react';
 import Link from 'next/link';
 import type { DailyMetrics } from '@/lib/types';
 import { useProfile } from '@/lib/useProfile';
+import { computeBenchmarks } from '@/lib/benchmarks';
+import type { ProfileBenchmarks } from '@/lib/benchmarks';
 import RecoveryScore from './RecoveryScore';
 import SleepCard from './SleepCard';
 import HRVCard from './HRVCard';
@@ -58,6 +60,16 @@ export default function Dashboard() {
 
   const todayStrain = data?.activities.reduce((s, a) => s + a.strain, 0) ?? 0;
   const greeting = profile?.name ? `Hola, ${profile.name}` : 'Garmin Health';
+
+  // Compute age/sex/fitness benchmarks whenever we have both profile and data
+  const benchmarks: ProfileBenchmarks | null =
+    profile && data && data.hrv.weeklyAverage > 0 && data.recovery.restingHR > 0
+      ? computeBenchmarks(profile, {
+          hrv: data.hrv.weeklyAverage,
+          rhr: data.recovery.restingHR,
+          sleepHours: data.sleep.totalSleepSeconds / 3600,
+        })
+      : null;
 
   return (
     <>
@@ -152,14 +164,14 @@ export default function Dashboard() {
 
               {/* Recovery — hero section */}
               <div className="card">
-                <RecoveryScore recovery={data.recovery} />
+                <RecoveryScore recovery={data.recovery} benchmarks={benchmarks} />
               </div>
 
               {/* Sleep */}
-              <SleepCard sleep={data.sleep} />
+              <SleepCard sleep={data.sleep} benchmark={benchmarks?.sleep} />
 
               {/* HRV */}
-              <HRVCard hrv={data.hrv} />
+              <HRVCard hrv={data.hrv} benchmark={benchmarks?.hrv} />
 
               {/* Body Battery */}
               <BodyBatteryCard bodyBattery={data.bodyBattery} />

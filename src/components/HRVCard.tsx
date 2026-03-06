@@ -2,7 +2,9 @@
 
 import { Activity } from 'lucide-react';
 import type { HRVData } from '@/lib/types';
+import type { MetricBenchmark } from '@/lib/benchmarks';
 import TrendSparkline from './ui/TrendSparkline';
+import BenchmarkBadge from './ui/BenchmarkBadge';
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   balanced: { label: 'Equilibrado', color: '#4ade80' },
@@ -12,9 +14,11 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 
 interface Props {
   hrv: HRVData;
+  /** Age/sex-adjusted benchmark; omit if no profile is set. */
+  benchmark?: MetricBenchmark;
 }
 
-export default function HRVCard({ hrv }: Props) {
+export default function HRVCard({ hrv, benchmark }: Props) {
   const statusInfo = STATUS_LABELS[hrv.status] ?? STATUS_LABELS.balanced;
   const trend7 = hrv.trend.length > 0 ? hrv.trend : [0];
   const min7 = Math.min(...trend7.filter(v => v > 0));
@@ -68,6 +72,9 @@ export default function HRVCard({ hrv }: Props) {
         <span>Mín 7d: <span className="text-primary">{min7} ms</span></span>
         <span>Máx 7d: <span className="text-primary">{max7} ms</span></span>
       </div>
+
+      {/* Demographic benchmark — only shown when profile is set */}
+      {benchmark && <BenchmarkBadge benchmark={benchmark} />}
     </div>
   );
 }

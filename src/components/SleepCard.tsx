@@ -2,7 +2,9 @@
 
 import { Moon, Zap } from 'lucide-react';
 import type { SleepData } from '@/lib/types';
+import type { MetricBenchmark } from '@/lib/benchmarks';
 import { formatDuration } from '@/lib/scoring';
+import BenchmarkBadge from './ui/BenchmarkBadge';
 
 const STAGES = [
   { key: 'deepSleepSeconds', label: 'Profundo', color: '#818cf8', target: 0.2 },
@@ -13,9 +15,11 @@ const STAGES = [
 
 interface Props {
   sleep: SleepData;
+  /** Age-adjusted sleep duration benchmark; omit if no profile is set. */
+  benchmark?: MetricBenchmark;
 }
 
-export default function SleepCard({ sleep }: Props) {
+export default function SleepCard({ sleep, benchmark }: Props) {
   const totalHours = sleep.totalSleepSeconds / 3600;
 
   return (
@@ -116,6 +120,11 @@ export default function SleepCard({ sleep }: Props) {
             </span>
           </div>
         </div>
+      )}
+
+      {/* Demographic benchmark — only shown when profile is set */}
+      {benchmark && sleep.totalSleepSeconds > 0 && (
+        <BenchmarkBadge benchmark={benchmark} />
       )}
     </div>
   );
