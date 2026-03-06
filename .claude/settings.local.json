@@ -6,7 +6,21 @@
       "mcp__Claude_Preview__preview_start",
       "Bash(curl -s http://localhost:3030)",
       "Bash(git init)",
-      "Bash(git add -A)"
+      "Bash(git add -A)",
+      "Bash(git commit:*)",
+      "mcp__f846f05c-0947-4c29-bdb2-770ceafad5e9__deploy_to_vercel",
+      "Bash(npx vercel --version)",
+      "Bash(npx vercel deploy --yes)",
+      "mcp__f846f05c-0947-4c29-bdb2-770ceafad5e9__list_teams",
+      "mcp__f846f05c-0947-4c29-bdb2-770ceafad5e9__web_fetch_vercel_url",
+      "mcp__f846f05c-0947-4c29-bdb2-770ceafad5e9__list_projects",
+      "WebFetch(domain:garmin-heatlth.vercel.app)",
+      "mcp__f846f05c-0947-4c29-bdb2-770ceafad5e9__list_deployments",
+      "Bash(npx vercel redeploy dpl_CLzfbDtTfYQPTHwyudUHoy1dTiZ5 --yes --team cggmxs-projects)",
+      "Bash(npx vercel redeploy dpl_CLzfbDtTfYQPTHwyudUHoy1dTiZ5 --scope cggmxs-projects)",
+      "mcp__f846f05c-0947-4c29-bdb2-770ceafad5e9__get_runtime_logs",
+      "Bash(git add src/app/api/debug/route.ts)",
+      "Bash(npx vercel --prod --scope cggmxs-projects)"
     ]
   }
 }
