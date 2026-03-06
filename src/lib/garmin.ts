@@ -153,16 +153,16 @@ export async function fetchDailyMetrics(dateStr?: string): Promise<DailyMetrics>
       gc.getActivities(0, 5),
     ]);
 
-    // HRV 7-day trend (sequential, small)
-    const hrvTrend: number[] = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = format(subDays(today, i), 'yyyy-MM-dd');
-      try {
-        const hd = await gc.getHrv(d) as Record<string, unknown>;
-        const s = hd?.hrvSummary as Record<string, unknown> | undefined;
-        hrvTrend.push((s?.lastNight ?? 0) as number);
-      } catch { hrvTrend.push(0); }
-    }
+    // HRV 7-day trend — parallel fetches with individual error handling
+    const trendDates = Array.from({ length: 7 }, (_, i) =>
+      format(subDays(today, 6 - i), 'yyyy-MM-dd'),
+    );
+    const trendResults = await Promise.allSettled(trendDates.map(d => gc.getHrv(d)));
+    const hrvTrend = trendResults.map(r => {
+      if (r.status !== 'fulfilled') return 0;
+      const s = (r.value as Record<string, unknown>)?.hrvSummary as Record<string, unknown> | undefined;
+      return (s?.lastNight ?? 0) as number;
+    });
 
     const sleep = parseSleep(sleepRes.status === 'fulfilled' ? sleepRes.value as Record<string, unknown> : {});
     const sleepScore = calculateSleepScore(sleep);
@@ -233,7 +233,9 @@ export async function fetchDailyMetrics(dateStr?: string): Promise<DailyMetrics>
     cache.set(date, { data: metrics, ts: Date.now() });
     return metrics;
   } catch (err) {
-    console.error('[Garmin] fetch failed:', err);
-    return { ...mockData, date };
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[Garmin] fetch failed:', msg);
+    // Return partial mock but mark it so we can debug
+    return { ...mockData, date, isDemo: true };
   }
 }
