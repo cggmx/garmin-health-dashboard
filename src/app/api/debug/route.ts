@@ -30,6 +30,16 @@ export async function GET() {
     await client.login();
     results.login = { ok: true, ms: Date.now() - loginStart };
 
+    // Export OAuth tokens — use these to set GARMIN_OAUTH1 / GARMIN_OAUTH2 env vars
+    // so future requests skip login entirely (avoids 427 rate limiting)
+    const oauth1 = (client.client as Record<string, unknown>).oauth1Token;
+    const oauth2 = (client.client as Record<string, unknown>).oauth2Token;
+    results.tokens = {
+      oauth1: JSON.stringify(oauth1),
+      oauth2: JSON.stringify(oauth2),
+      note: 'Copy these values as GARMIN_OAUTH1 and GARMIN_OAUTH2 in Vercel env vars',
+    };
+
     const date = format(new Date(), 'yyyy-MM-dd');
     results.date = date;
 
@@ -52,7 +62,6 @@ export async function GET() {
         results[name] = {
           ok: true,
           ms: Date.now() - start,
-          // Return a sample of the data structure
           keys: data && typeof data === 'object' ? Object.keys(data as object).slice(0, 10) : typeof data,
         };
       } catch (e: unknown) {

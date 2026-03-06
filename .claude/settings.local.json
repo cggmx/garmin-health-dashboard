@@ -23,7 +23,9 @@
       "Bash(npx vercel --prod --scope cggmxs-projects)",
       "Bash(npx vercel logs https://garmin-heatlth.vercel.app --scope cggmxs-projects)",
       "Bash(npx vercel logs \"https://garmin-heatlth.vercel.app/api/health\" --scope cggmxs-projects --output raw)",
-      "Bash(echo \"EXIT: $?\")"
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(node scripts/get-garmin-tokens.js)",
+      "Bash(node -e \":*)"
     ]
   }
 }

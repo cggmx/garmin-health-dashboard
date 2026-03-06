@@ -16,22 +16,48 @@ const CACHE_TTL = 15 * 60 * 1000; // 15 min
 
 // ─── Singleton Garmin client ──────────────────────────────────────────────────
 let garminClient: unknown = null;
-let loginTs = 0;
-const LOGIN_TTL = 50 * 60 * 1000; // 50 min
+let clientTs = 0;
+const CLIENT_TTL = 55 * 60 * 1000; // 55 min
 
 async function getClient(): Promise<unknown> {
-  const { GARMIN_USERNAME: user, GARMIN_PASSWORD: pass } = process.env;
-  if (!user || !pass) return null;
+  // Reuse warm singleton
+  if (garminClient && Date.now() - clientTs < CLIENT_TTL) return garminClient;
 
-  if (garminClient && Date.now() - loginTs < LOGIN_TTL) return garminClient;
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { GarminConnect } = require('garmin-connect');
 
+  const hasCredentials = !!(process.env.GARMIN_USERNAME && process.env.GARMIN_PASSWORD);
+  if (!hasCredentials) return null;
+
+  const client = new GarminConnect({
+    username: process.env.GARMIN_USERNAME,
+    password: process.env.GARMIN_PASSWORD,
+  });
+
+  // ── Strategy 1: restore from pre-fetched OAuth tokens (no login needed) ──
+  const rawOauth1 = process.env.GARMIN_OAUTH1;
+  const rawOauth2 = process.env.GARMIN_OAUTH2;
+
+  if (rawOauth1 && rawOauth2) {
+    try {
+      const oauth1 = JSON.parse(rawOauth1);
+      const oauth2 = JSON.parse(rawOauth2);
+      client.loadToken(oauth1, oauth2);
+      garminClient = client;
+      clientTs = Date.now();
+      console.log('[Garmin] session restored from OAuth tokens');
+      return client;
+    } catch (e) {
+      console.warn('[Garmin] token restore failed, falling back to login:', e);
+    }
+  }
+
+  // ── Strategy 2: full login (triggers MFA/rate-limit risk) ──────────────
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { GarminConnect } = require('garmin-connect');
-    const client = new GarminConnect({ username: user, password: pass });
     await client.login();
     garminClient = client;
-    loginTs = Date.now();
+    clientTs = Date.now();
+    console.log('[Garmin] login successful');
     return client;
   } catch (err) {
     console.error('[Garmin] login failed:', err);
