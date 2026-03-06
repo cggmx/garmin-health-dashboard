@@ -59,9 +59,9 @@ export async function GET() {
     // Test each endpoint
     const endpoints: [string, () => Promise<unknown>][] = [
       ['sleep', () => gc.getSleepData(today)],
-      ['hrv', () => gc.get(`${GC_API}/hrv-service/hrv/daily/${date}`)],
+      ['hrv', () => gc.get(`${GC_API}/hrv-service/hrv/${date}`)],
       ['heartRate', () => gc.getHeartRate(today)],
-      ['bodyBattery', () => gc.get(`${GC_API}/wellness-service/wellness/bodyBattery/event/${date}`)],
+      ['bodyBattery', () => gc.get(`${GC_API}/wellness-service/wellness/bodyBattery/event/${date}/${date}`)],
       ['stress', () => gc.get(`${GC_API}/wellness-service/wellness/dailyStress/${date}`)],
       ['activities', () => gc.getActivities(0, 5)],
       ['steps', () => gc.getSteps(today)],
