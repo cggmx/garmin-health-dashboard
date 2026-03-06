@@ -170,12 +170,13 @@ export async function fetchDailyMetrics(dateStr?: string): Promise<DailyMetrics>
     const today = new Date(date);
 
     // Parallel fetch — silence individual failures with allSettled
+    // garmin-connect expects Date objects (not strings) for date params
     const [sleepRes, hrvRes, hrRes, bbRes, stressRes, actsRes] = await Promise.allSettled([
-      gc.getSleepData(date),
-      gc.getHrv(date),
-      gc.getHeartRate(date),
-      gc.getBodyBattery(date, date),
-      gc.getStressData(date),
+      gc.getSleepData(today),
+      gc.getHrv(today),
+      gc.getHeartRate(today),
+      gc.getBodyBattery(today, today),
+      gc.getStressData(today),
       gc.getActivities(0, 5),
     ]);
 
