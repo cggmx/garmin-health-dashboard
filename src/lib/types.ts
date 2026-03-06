@@ -60,6 +60,20 @@ export interface WeeklyTrend {
   strain: number[];
 }
 
+// ─── User Profile ─────────────────────────────────────────────────────────────
+export type Sex = 'male' | 'female';
+export type FitnessLevel = 'beginner' | 'intermediate' | 'advanced' | 'athlete';
+export type Goal = 'recovery' | 'performance' | 'weight_loss' | 'general_health';
+
+export interface UserProfile {
+  name?: string;
+  age: number;
+  sex: Sex;
+  fitnessLevel: FitnessLevel;
+  goal: Goal;
+  setupCompleted: boolean;
+}
+
 export interface DailyMetrics {
   date: string;
   isDemo: boolean;
