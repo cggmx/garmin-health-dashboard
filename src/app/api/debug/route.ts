@@ -69,7 +69,7 @@ export async function GET() {
     }
 
     // ── Helper: probe one endpoint, return ok/error + first 400 chars of JSON ─
-    async function probe(label: string, fn: () => Promise<unknown>) {
+    const probe = async (_label: string, fn: () => Promise<unknown>) => {
       const start = Date.now();
       try {
         const data = await fn();
@@ -84,7 +84,7 @@ export async function GET() {
         const err = e as Error;
         return { ok: false, ms: Date.now() - start, error: err?.message ?? String(e) };
       }
-    }
+    };
 
     // ── Standard working endpoints ────────────────────────────────────────────
     results.sleep      = await probe('sleep',      () => gc.getSleepData(today));
