@@ -175,9 +175,9 @@ export async function fetchDailyMetrics(dateStr?: string): Promise<DailyMetrics>
     // are not in garmin-connect@1.6.2 so we call the raw endpoints via gc.get()
     const [sleepRes, hrvRes, hrRes, bbRes, stressRes, actsRes, stepsRes] = await Promise.allSettled([
       gc.getSleepData(today),
-      gc.get(`${GC_API}/hrv-service/hrv/daily/${date}`),
+      gc.get(`${GC_API}/hrv-service/hrv/${date}`),
       gc.getHeartRate(today),
-      gc.get(`${GC_API}/wellness-service/wellness/bodyBattery/event/${date}`),
+      gc.get(`${GC_API}/wellness-service/wellness/bodyBattery/event/${date}/${date}`),
       gc.get(`${GC_API}/wellness-service/wellness/dailyStress/${date}`),
       gc.getActivities(0, 5),
       gc.getSteps(today),
