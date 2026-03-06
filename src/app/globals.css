@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #080808;
+  --color-surface: #111111;
+  --color-border: #1f1f1f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background-color: var(--color-bg);
+  color: #f5f5f5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+/* Safe areas for notched phones */
+.safe-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@layer components {
+  .card {
+    @apply bg-surface rounded-2xl border border-border p-4;
+  }
+
+  .card-header {
+    @apply flex items-center gap-2 text-xs font-semibold tracking-widest text-secondary uppercase mb-3;
+  }
+}
+
+/* Recharts overrides */
+.recharts-wrapper {
+  cursor: default !important;
+}
+
+.recharts-tooltip-wrapper {
+  outline: none;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 2px;
+}

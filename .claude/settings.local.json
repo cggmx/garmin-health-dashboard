@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install)",
+      "Bash(npm view garmin-connect versions --json)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(curl -s http://localhost:3030)",
+      "Bash(git init)",
+      "Bash(git add -A)"
+    ]
+  }
+}
