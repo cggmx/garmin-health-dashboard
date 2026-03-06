@@ -20,7 +20,10 @@
       "Bash(npx vercel redeploy dpl_CLzfbDtTfYQPTHwyudUHoy1dTiZ5 --scope cggmxs-projects)",
       "mcp__f846f05c-0947-4c29-bdb2-770ceafad5e9__get_runtime_logs",
       "Bash(git add src/app/api/debug/route.ts)",
-      "Bash(npx vercel --prod --scope cggmxs-projects)"
+      "Bash(npx vercel --prod --scope cggmxs-projects)",
+      "Bash(npx vercel logs https://garmin-heatlth.vercel.app --scope cggmxs-projects)",
+      "Bash(npx vercel logs \"https://garmin-heatlth.vercel.app/api/health\" --scope cggmxs-projects --output raw)",
+      "Bash(echo \"EXIT: $?\")"
     ]
   }
 }
