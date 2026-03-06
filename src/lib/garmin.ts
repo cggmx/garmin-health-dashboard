@@ -168,16 +168,19 @@ export async function fetchDailyMetrics(dateStr?: string): Promise<DailyMetrics>
   try {
     const gc = client as Record<string, (...args: unknown[]) => Promise<unknown>>;
     const today = new Date(date);
+    const GC_API = 'https://connectapi.garmin.com';
 
     // Parallel fetch — silence individual failures with allSettled
-    // garmin-connect expects Date objects (not strings) for date params
-    const [sleepRes, hrvRes, hrRes, bbRes, stressRes, actsRes] = await Promise.allSettled([
+    // Note: getSleepData/getHeartRate expect Date objects; HRV/battery/stress
+    // are not in garmin-connect@1.6.2 so we call the raw endpoints via gc.get()
+    const [sleepRes, hrvRes, hrRes, bbRes, stressRes, actsRes, stepsRes] = await Promise.allSettled([
       gc.getSleepData(today),
-      gc.getHrv(today),
+      gc.get(`${GC_API}/hrv-service/hrv/daily/${date}`),
       gc.getHeartRate(today),
-      gc.getBodyBattery(today, today),
-      gc.getStressData(today),
+      gc.get(`${GC_API}/wellness-service/wellness/bodyBattery/event/${date}`),
+      gc.get(`${GC_API}/wellness-service/wellness/dailyStress/${date}`),
       gc.getActivities(0, 5),
+      gc.getSteps(today),
     ]);
 
     // HRV 7-day trend — derive from weeklyAvg + lastNight (avoids 7 extra API calls)
@@ -257,8 +260,8 @@ export async function fetchDailyMetrics(dateStr?: string): Promise<DailyMetrics>
       bodyBattery,
       stress,
       activities,
-      steps: 0,
-      calories: 0,
+      steps: stepsRes.status === 'fulfilled' ? (stepsRes.value as number) ?? 0 : 0,
+      calories: activities.reduce((s, a) => s + a.calories, 0),
       weeklyTrend,
     };
 

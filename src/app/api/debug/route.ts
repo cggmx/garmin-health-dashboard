@@ -26,33 +26,45 @@ export async function GET() {
       password: process.env.GARMIN_PASSWORD,
     });
 
-    const loginStart = Date.now();
-    await client.login();
-    results.login = { ok: true, ms: Date.now() - loginStart };
+    // Try OAuth tokens first (no login needed)
+    const rawOauth1 = process.env.GARMIN_OAUTH1;
+    const rawOauth2 = process.env.GARMIN_OAUTH2;
+    let loginMethod = 'password';
 
-    // Export OAuth tokens — use these to set GARMIN_OAUTH1 / GARMIN_OAUTH2 env vars
-    // so future requests skip login entirely (avoids 427 rate limiting)
-    const oauth1 = (client.client as Record<string, unknown>).oauth1Token;
-    const oauth2 = (client.client as Record<string, unknown>).oauth2Token;
-    results.tokens = {
-      oauth1: JSON.stringify(oauth1),
-      oauth2: JSON.stringify(oauth2),
-      note: 'Copy these values as GARMIN_OAUTH1 and GARMIN_OAUTH2 in Vercel env vars',
-    };
+    if (rawOauth1 && rawOauth2) {
+      try {
+        const oauth1 = JSON.parse(rawOauth1);
+        const oauth2 = JSON.parse(rawOauth2);
+        client.loadToken(oauth1, oauth2);
+        loginMethod = 'oauth_token';
+        results.login = { ok: true, ms: 0, method: loginMethod };
+      } catch {
+        const loginStart = Date.now();
+        await client.login();
+        results.login = { ok: true, ms: Date.now() - loginStart, method: loginMethod };
+      }
+    } else {
+      const loginStart = Date.now();
+      await client.login();
+      results.login = { ok: true, ms: Date.now() - loginStart, method: loginMethod };
+    }
 
     const date = format(new Date(), 'yyyy-MM-dd');
+    const today = new Date(date);
+    const GC_API = 'https://connectapi.garmin.com';
     results.date = date;
 
     const gc = client as Record<string, (...args: unknown[]) => Promise<unknown>>;
 
-    // Test each endpoint individually
+    // Test each endpoint
     const endpoints: [string, () => Promise<unknown>][] = [
-      ['sleep', () => gc.getSleepData(date)],
-      ['hrv', () => gc.getHrv(date)],
-      ['heartRate', () => gc.getHeartRate(date)],
-      ['bodyBattery', () => gc.getBodyBattery(date, date)],
-      ['stress', () => gc.getStressData(date)],
+      ['sleep', () => gc.getSleepData(today)],
+      ['hrv', () => gc.get(`${GC_API}/hrv-service/hrv/daily/${date}`)],
+      ['heartRate', () => gc.getHeartRate(today)],
+      ['bodyBattery', () => gc.get(`${GC_API}/wellness-service/wellness/bodyBattery/event/${date}`)],
+      ['stress', () => gc.get(`${GC_API}/wellness-service/wellness/dailyStress/${date}`)],
       ['activities', () => gc.getActivities(0, 5)],
+      ['steps', () => gc.getSteps(today)],
     ];
 
     for (const [name, fn] of endpoints) {
@@ -62,7 +74,7 @@ export async function GET() {
         results[name] = {
           ok: true,
           ms: Date.now() - start,
-          keys: data && typeof data === 'object' ? Object.keys(data as object).slice(0, 10) : typeof data,
+          keys: data && typeof data === 'object' ? Object.keys(data as object).slice(0, 10) : data,
         };
       } catch (e: unknown) {
         const err = e as Error;
