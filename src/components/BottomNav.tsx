@@ -1,6 +1,6 @@
 'use client';
 
-import { LayoutDashboard, Moon, TrendingUp, Flame } from 'lucide-react';
+import { LayoutDashboard, Moon, TrendingUp, Flame, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: '/sleep', label: 'Sueño', Icon: Moon },
   { href: '/strain', label: 'Esfuerzo', Icon: Flame },
   { href: '/trends', label: 'Tendencias', Icon: TrendingUp },
+  { href: '/profile', label: 'Perfil', Icon: User },
 ];
 
 export default function BottomNav() {
@@ -29,8 +30,8 @@ export default function BottomNav() {
                 active ? 'text-primary' : 'text-muted hover:text-secondary',
               )}
             >
-              <Icon size={20} strokeWidth={active ? 2.5 : 1.8} />
-              <span className="text-[10px] font-medium tracking-wide">{label}</span>
+              <Icon size={18} strokeWidth={active ? 2.5 : 1.8} />
+              <span className="text-[9px] font-medium tracking-wide">{label}</span>
             </Link>
           );
         })}
