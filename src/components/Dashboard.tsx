@@ -35,6 +35,12 @@ export default function Dashboard() {
   const { profile, saveProfile, loaded: profileLoaded } = useProfile();
   const showSetup = profileLoaded && !profile;
 
+  // Date string must be client-only to avoid server/client hydration mismatch
+  const [dateStr, setDateStr] = useState('');
+  useEffect(() => {
+    setDateStr(format(new Date(), "EEEE, d 'de' MMMM", { locale: es }));
+  }, []);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -87,7 +93,7 @@ export default function Dashboard() {
               <div>
                 <h1 className="text-sm font-bold text-primary leading-none">{greeting}</h1>
                 <p className="text-[10px] text-secondary capitalize mt-0.5">
-                  {format(new Date(), "EEEE, d 'de' MMMM", { locale: es })}
+                  {dateStr}
                 </p>
               </div>
             </div>
