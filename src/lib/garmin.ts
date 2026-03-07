@@ -97,9 +97,16 @@ function parseHRV(raw: Record<string, unknown>, trend: number[]): HRVData {
   };
 }
 
-function parseBodyBattery(raw: unknown[]): BodyBatteryData {
+function parseBodyBattery(raw: unknown[], summary?: Record<string, unknown> | null): BodyBatteryData {
+  // Fallback: extract Body Battery aggregates from the daily usersummary
   if (!Array.isArray(raw) || raw.length === 0) {
-    // Device does not support Body Battery — all endpoints return 404
+    const current = (summary?.bodyBatteryMostRecentValue ?? 0) as number;
+    const high = (summary?.bodyBatteryHighestValue ?? summary?.bodyBatteryAtWakeTime ?? 0) as number;
+    const low = (summary?.bodyBatteryLowestValue ?? 0) as number;
+    if (current > 0 || high > 0) {
+      // Summary has BB data — show aggregates (no intraday chart)
+      return { isAvailable: true, current, charged: high, drained: low, data: [] };
+    }
     return { isAvailable: false, current: 0, charged: 0, drained: 0, data: [] };
   }
   const readings = raw.map((r: unknown) => {
@@ -172,17 +179,30 @@ export async function fetchDailyMetrics(dateStr?: string): Promise<DailyMetrics>
     const today = new Date(date);
     const GC_API = 'https://connectapi.garmin.com';
 
+    // Get displayName first — needed for the usersummary endpoint
+    let displayName = '';
+    try {
+      const profile = await gc.getUserProfile() as Record<string, unknown>;
+      displayName = (profile.displayName ?? '') as string;
+    } catch { /* ignore — usersummary will just fail silently */ }
+
     // Parallel fetch — silence individual failures with allSettled
     // Note: getSleepData/getHeartRate expect Date objects; HRV/battery/stress
     // are not in garmin-connect@1.6.2 so we call the raw endpoints via gc.get()
-    const [sleepRes, hrvRes, hrRes, bbRes, stressRes, actsRes, stepsRes] = await Promise.allSettled([
+    const [sleepRes, hrvRes, hrRes, bbRes, bbAltRes, stressRes, actsRes, stepsRes, summaryRes] = await Promise.allSettled([
       gc.getSleepData(today),
       gc.get(`${GC_API}/hrv-service/hrv/${date}`),
       gc.getHeartRate(today),
       gc.get(`${GC_API}/wellness-service/wellness/bodyBattery/event/${date}/${date}`),
+      // Alternative BB URL format (query params) — some devices use this
+      gc.get(`${GC_API}/wellness-service/wellness/bodyBattery/event?startDate=${date}&endDate=${date}`),
       gc.get(`${GC_API}/wellness-service/wellness/dailyStress/${date}`),
       gc.getActivities(0, 5),
       gc.getSteps(today),
+      // Daily summary — reliable fallback for BB aggregates
+      displayName
+        ? gc.get(`${GC_API}/usersummary-service/usersummary/daily/${displayName}?calendarDate=${date}`)
+        : Promise.resolve(null),
     ]);
 
     // HRV 7-day trend — derive from weeklyAvg + lastNight (avoids 7 extra API calls)
@@ -221,12 +241,23 @@ export async function fetchDailyMetrics(dateStr?: string): Promise<DailyMetrics>
       hrvTrend,
     );
 
-    const hrData = (hrRes.status === 'fulfilled' ? hrRes.value : {}) as Record<string, unknown>;
-    const restingHR = ((hrData?.restingHeartRate ?? (hrData?.statisticsDTO as Record<string, unknown> | undefined)?.restingHeartRate ?? 0) as number);
+    // Daily summary — parse first so it can be used as fallback for BB and HR
+    const summaryData = summaryRes.status === 'fulfilled'
+      ? summaryRes.value as Record<string, unknown> | null
+      : null;
 
-    const bodyBattery = parseBodyBattery(
-      bbRes.status === 'fulfilled' ? bbRes.value as unknown[] ?? [] : [],
-    );
+    const hrData = (hrRes.status === 'fulfilled' ? hrRes.value : {}) as Record<string, unknown>;
+    const summaryRestingHR = (summaryData?.restingHeartRateValue ?? summaryData?.restingHeartRate ?? 0) as number;
+    const restingHR = ((hrData?.restingHeartRate ?? (hrData?.statisticsDTO as Record<string, unknown> | undefined)?.restingHeartRate ?? 0) as number) || summaryRestingHR;
+
+    // Body Battery: try primary endpoint, then alt URL, then extract aggregates from usersummary
+    const bbRaw =
+      (bbRes.status === 'fulfilled' && Array.isArray(bbRes.value) && (bbRes.value as unknown[]).length > 0)
+        ? bbRes.value as unknown[]
+        : (bbAltRes.status === 'fulfilled' && Array.isArray(bbAltRes.value) && (bbAltRes.value as unknown[]).length > 0)
+          ? bbAltRes.value as unknown[]
+          : [];
+    const bodyBattery = parseBodyBattery(bbRaw, summaryData);
 
     const stress = parseStress(
       stressRes.status === 'fulfilled' ? stressRes.value as Record<string, unknown> : {},
