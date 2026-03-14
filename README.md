@@ -103,6 +103,10 @@ npm start
 GARMIN_USERNAME=your@email.com
 GARMIN_PASSWORD=yourpassword
 
+# Garmin OAuth tokens — use these if your account has MFA/2FA enabled (see below)
+GARMIN_OAUTH1={"oauth_token":"...","oauth_token_secret":"..."}
+GARMIN_OAUTH2={"access_token":"...","refresh_token":"...","expires_at":...}
+
 # AI weekly summary (optional — feature hidden if not set)
 ANTHROPIC_API_KEY=sk-ant-...
 
@@ -113,6 +117,22 @@ VAPID_EMAIL=mailto:your@email.com
 ```
 
 Copy `.env.example` for the full template.
+
+### Accounts with MFA / 2-factor authentication enabled
+
+If Garmin sends you a verification code by email when you sign in, you need to generate OAuth tokens once using the included script:
+
+```bash
+node scripts/get-garmin-tokens.js
+```
+
+The script will:
+1. Ask for your Garmin email and password
+2. Detect that MFA is required and wait for you to enter the email code
+3. Automatically add `GARMIN_OAUTH1` and `GARMIN_OAUTH2` to your Vercel project
+4. Redeploy the app
+
+> **Token expiry**: tokens last ~90 days. Re-run the script when they expire. When `GARMIN_OAUTH1` / `GARMIN_OAUTH2` are set, `GARMIN_USERNAME` / `GARMIN_PASSWORD` are still needed for display purposes but not for authentication.
 
 ---
 
@@ -236,6 +256,10 @@ npm start
 GARMIN_USERNAME=tu@correo.com
 GARMIN_PASSWORD=tucontraseña
 
+# Tokens OAuth de Garmin — úsalos si tu cuenta tiene MFA/2FA activado (ver abajo)
+GARMIN_OAUTH1={"oauth_token":"...","oauth_token_secret":"..."}
+GARMIN_OAUTH2={"access_token":"...","refresh_token":"...","expires_at":...}
+
 # Resumen IA semanal (opcional — la función se oculta si no está configurado)
 ANTHROPIC_API_KEY=sk-ant-...
 
@@ -246,6 +270,22 @@ VAPID_EMAIL=mailto:tu@correo.com
 ```
 
 Copia `.env.example` para la plantilla completa.
+
+### Cuentas con MFA / verificación en dos pasos activada
+
+Si Garmin te envía un código por correo al iniciar sesión, necesitas generar tokens OAuth una sola vez con el script incluido:
+
+```bash
+node scripts/get-garmin-tokens.js
+```
+
+El script:
+1. Pide tu correo y contraseña de Garmin
+2. Detecta que se requiere MFA y espera a que ingreses el código del correo
+3. Agrega automáticamente `GARMIN_OAUTH1` y `GARMIN_OAUTH2` a tu proyecto de Vercel
+4. Redespliega la app
+
+> **Expiración**: los tokens duran ~90 días. Vuelve a ejecutar el script cuando expiren. Con `GARMIN_OAUTH1` / `GARMIN_OAUTH2` configurados, `GARMIN_USERNAME` / `GARMIN_PASSWORD` siguen siendo necesarios para mostrar tu nombre, pero no para autenticarse.
 
 ---
 
