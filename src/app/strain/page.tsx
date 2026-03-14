@@ -8,6 +8,7 @@ import type { DailyMetrics, TrendPoint } from '@/lib/types';
 import StrainCard from '@/components/StrainCard';
 import BottomNav from '@/components/BottomNav';
 import { getStrainColor, getCategoryColor, formatDuration } from '@/lib/scoring';
+import { useLang } from '@/lib/i18n';
 
 const ACTIVITY_ICONS: Record<string, string> = {
   running: '🏃',
@@ -19,15 +20,7 @@ const ACTIVITY_ICONS: Record<string, string> = {
   other: '⚡',
 };
 
-const ACTIVITY_LABELS: Record<string, string> = {
-  running: 'Carrera',
-  cycling: 'Ciclismo',
-  swimming: 'Natación',
-  walking: 'Caminata',
-  strength_training: 'Fuerza',
-  yoga: 'Yoga',
-  other: 'Otro',
-};
+// Activity labels will be set via t() inside the component
 
 // ── ACWR helpers ──────────────────────────────────────────────────────────────
 interface ACWRResult {
@@ -63,30 +56,44 @@ function computeACWR(points: TrendPoint[]): ACWRResult {
   let desc: string;
 
   if (ratio === 0) {
-    zone = 'optimal'; label = 'Sin datos'; color = '#4a5568'; desc = 'Insuficientes datos históricos.';
+    zone = 'optimal'; label = ''; color = '#4a5568'; desc = '';
   } else if (ratio < 0.8) {
-    zone = 'undertrain'; label = 'Desentrenamiento'; color = '#38bdf8';
-    desc = 'Carga reciente muy baja vs. tu norma. Podrías perder adaptaciones.';
+    zone = 'undertrain'; label = ''; color = '#38bdf8'; desc = '';
   } else if (ratio <= 1.0) {
-    zone = 'optimal'; label = 'Zona óptima'; color = '#4ade80';
-    desc = 'Equilibrio ideal entre carga aguda y crónica. Bajo riesgo de lesión.';
+    zone = 'optimal'; label = ''; color = '#4ade80'; desc = '';
   } else if (ratio <= 1.3) {
-    zone = 'moderate'; label = 'Carga moderada'; color = '#facc15';
-    desc = 'Carga ligeramente superior a tu norma. Monitorea la recuperación.';
+    zone = 'moderate'; label = ''; color = '#facc15'; desc = '';
   } else if (ratio <= 1.5) {
-    zone = 'high'; label = 'Carga alta'; color = '#fb923c';
-    desc = 'Zona de precaución. Riesgo de lesión aumentado. Prioriza el descanso.';
+    zone = 'high'; label = ''; color = '#fb923c'; desc = '';
   } else {
-    zone = 'danger'; label = 'Zona de peligro'; color = '#f87171';
-    desc = 'Carga aguda muy superior a tu norma crónica. Alto riesgo de sobreentrenamiento.';
+    zone = 'danger'; label = ''; color = '#f87171'; desc = '';
   }
 
   return { acute: Math.round(acute * 10) / 10, chronic: Math.round(chronic * 10) / 10, ratio, zone, label, color, desc, hasData };
 }
 
 export default function StrainPage() {
+  const { t } = useLang();
   const [data, setData] = useState<DailyMetrics | null>(null);
   const [trends, setTrends] = useState<TrendPoint[] | null>(null);
+
+  const ACTIVITY_LABELS: Record<string, string> = {
+    running: t('strain.activityTypes.running'),
+    cycling: t('strain.activityTypes.cycling'),
+    swimming: t('strain.activityTypes.swimming'),
+    walking: t('strain.activityTypes.walking'),
+    strength_training: t('strain.activityTypes.strength'),
+    yoga: t('strain.activityTypes.yoga'),
+    other: t('strain.activityTypes.other'),
+  };
+
+  const ACWR_LABELS: Record<string, { label: string; desc: string }> = {
+    undertrain: { label: t('strain.acwr.zones.detraining'), desc: t('strain.acwr.zones.detrainingDesc') },
+    optimal:    { label: t('strain.acwr.zones.optimal'),    desc: t('strain.acwr.zones.optimalDesc') },
+    moderate:   { label: t('strain.acwr.zones.moderate'),   desc: t('strain.acwr.zones.moderateDesc') },
+    high:       { label: t('strain.acwr.zones.high'),       desc: t('strain.acwr.zones.highDesc') },
+    danger:     { label: t('strain.acwr.zones.danger'),     desc: t('strain.acwr.zones.dangerDesc') },
+  };
 
   useEffect(() => {
     const localDate = format(new Date(), 'yyyy-MM-dd');
@@ -106,7 +113,7 @@ export default function StrainPage() {
               <ArrowLeft size={18} />
             </Link>
             <Flame size={16} className="text-strain" />
-            <h1 className="text-sm font-bold text-primary">Esfuerzo</h1>
+            <h1 className="text-sm font-bold text-primary">{t('strain.detailTitle')}</h1>
           </div>
         </header>
         <main className="max-w-md mx-auto px-4 pb-28 pt-4 flex flex-col gap-4">
@@ -137,7 +144,7 @@ export default function StrainPage() {
   const todayRecovery = data.recovery.score;
   const balance = todayRecovery - strainNorm;
   const balanceLabel =
-    balance >= 20 ? 'Recuperando' : balance >= 0 ? 'Equilibrado' : 'Sobrecargado';
+    balance >= 20 ? t('common.low') : balance >= 0 ? t('common.balance') : t('common.high');
   const balanceColor =
     balance >= 20 ? '#4ade80' : balance >= 0 ? '#facc15' : '#f87171';
 
@@ -167,7 +174,7 @@ export default function StrainPage() {
             <ArrowLeft size={18} />
           </Link>
           <Flame size={16} className="text-strain" />
-          <h1 className="text-sm font-bold text-primary">Esfuerzo</h1>
+          <h1 className="text-sm font-bold text-primary">{t('strain.detailTitle')}</h1>
         </div>
       </header>
 
@@ -177,7 +184,7 @@ export default function StrainPage() {
         <div className="grid grid-cols-3 gap-3">
           {/* Hoy */}
           <div className="card text-center">
-            <p className="text-xs text-secondary mb-1">Hoy</p>
+            <p className="text-xs text-secondary mb-1">{t('common.today')}</p>
             <p className="text-2xl font-bold leading-none" style={{ color: getStrainColor(todayStrain) }}>
               {todayStrain.toFixed(1)}
             </p>
@@ -186,7 +193,7 @@ export default function StrainPage() {
 
           {/* Promedio 7d */}
           <div className="card text-center">
-            <p className="text-xs text-secondary mb-1">Promedio 7d</p>
+            <p className="text-xs text-secondary mb-1">{t('common.avg7d')}</p>
             <p className="text-2xl font-bold leading-none" style={{ color: getStrainColor(avgStrain) }}>
               {avgStrain.toFixed(1)}
             </p>
@@ -195,11 +202,11 @@ export default function StrainPage() {
 
           {/* Balance */}
           <div className="card text-center">
-            <p className="text-xs text-secondary mb-1">Balance</p>
+            <p className="text-xs text-secondary mb-1">{t('strain.balance.title')}</p>
             <p className="text-sm font-bold leading-none mt-1" style={{ color: balanceColor }}>
               {balanceLabel}
             </p>
-            <p className="text-xs text-muted mt-1">carga vs rec.</p>
+            <p className="text-xs text-muted mt-1">{t('strain.balance.cargaVsRec')}</p>
           </div>
         </div>
 
@@ -210,8 +217,8 @@ export default function StrainPage() {
         <div className="card">
           <div className="card-header mb-4">
             <Flame size={14} className="text-strain" />
-            <span>Carga acumulada — 7 días</span>
-            <span className="ml-auto text-xs text-muted">avg: {avgStrain.toFixed(1)}</span>
+            <span>{t('strain.balance.chartTitle')}</span>
+            <span className="ml-auto text-xs text-muted">{t('strain.balance.avgLabel', { avg: avgStrain.toFixed(1) })}</span>
           </div>
 
           <div className="flex items-end justify-between gap-1.5 h-28 relative">
@@ -247,9 +254,9 @@ export default function StrainPage() {
           {/* Zone legend */}
           <div className="flex gap-3 mt-3 pt-3 border-t border-border">
             {[
-              { label: 'Recuperación', color: '#38bdf8', range: '≤8' },
-              { label: 'Moderado', color: '#fb923c', range: '≤14' },
-              { label: 'Alto', color: '#f87171', range: '>14' },
+              { label: t('trends.recovery'), color: '#38bdf8', range: '≤8' },
+              { label: t('common.moderate'), color: '#fb923c', range: '≤14' },
+              { label: t('common.high'), color: '#f87171', range: '>14' },
             ].map(z => (
               <div key={z.label} className="flex items-center gap-1.5">
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: z.color }} />
@@ -264,8 +271,8 @@ export default function StrainPage() {
         <div className="card">
           <div className="card-header mb-4">
             <Scale size={14} className="text-secondary" />
-            <span>Balance carga / recuperación</span>
-            <span className="ml-auto text-xs text-muted">7 días</span>
+            <span>{t('strain.balance.title')}</span>
+            <span className="ml-auto text-xs text-muted">{t('strain.balance.period')}</span>
           </div>
 
           {/* Dual-bar chart: strain (norm 0-100) vs recovery (0-100) */}
@@ -315,21 +322,21 @@ export default function StrainPage() {
           <div className="flex gap-4 mt-3 pt-3 border-t border-border">
             <div className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 rounded-sm bg-[#fb923c]" />
-              <span className="text-xs text-muted">Esfuerzo (norm.)</span>
+              <span className="text-xs text-muted">{t('strain.balance.strainLabel')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 rounded-sm bg-[#4ade80]" />
-              <span className="text-xs text-muted">Recuperación</span>
+              <span className="text-xs text-muted">{t('strain.balance.recoveryLabel')}</span>
             </div>
           </div>
 
           {/* Interpretation line */}
           <p className="text-xs text-secondary mt-2">
             {balance >= 20
-              ? '✓ Tu recuperación supera la carga — buen momento para entrenar fuerte.'
+              ? t('strain.balance.goodBalance')
               : balance >= 0
-              ? '⚖ Carga y recuperación equilibradas.'
-              : '⚠ La carga supera tu recuperación — considera descansar.'}
+              ? t('strain.balance.evenBalance')
+              : t('strain.balance.badBalance')}
           </p>
         </div>
 
@@ -338,7 +345,7 @@ export default function StrainPage() {
           <div className="card">
             <div className="card-header mb-4">
               <Activity size={14} className="text-secondary" />
-              <span>Actividades por tipo — hoy</span>
+              <span>{t('strain.activitiesTitle')}</span>
             </div>
 
             <div className="flex flex-col gap-3">
@@ -377,7 +384,7 @@ export default function StrainPage() {
                         }}
                       />
                     </div>
-                    <p className="text-xs text-muted mt-0.5 text-right">{pct}% del esfuerzo</p>
+                    <p className="text-xs text-muted mt-0.5 text-right">{pct}{t('strain.strainPct')}</p>
                   </div>
                 );
               })}
@@ -390,7 +397,7 @@ export default function StrainPage() {
           <div className="card">
             <div className="card-header mb-4">
               <ShieldAlert size={14} className="text-secondary" />
-              <span>Ratio carga aguda / crónica (ACWR)</span>
+              <span>{t('strain.acwr.title')}</span>
             </div>
 
             {/* Main ratio display */}
@@ -404,22 +411,22 @@ export default function StrainPage() {
                 </span>
               </div>
               <div>
-                <p className="text-sm font-bold text-primary">{acwr.label}</p>
-                <p className="text-xs text-secondary mt-0.5 leading-snug">{acwr.desc}</p>
+                <p className="text-sm font-bold text-primary">{ACWR_LABELS[acwr.zone]?.label ?? ''}</p>
+                <p className="text-xs text-secondary mt-0.5 leading-snug">{ACWR_LABELS[acwr.zone]?.desc ?? ''}</p>
               </div>
             </div>
 
             {/* Acute / Chronic breakdown */}
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div className="rounded-xl bg-surface px-3 py-2.5">
-                <p className="text-[10px] text-muted uppercase tracking-wider mb-1">Carga aguda (7d)</p>
+                <p className="text-[10px] text-muted uppercase tracking-wider mb-1">{t('strain.acwr.acute')}</p>
                 <p className="text-lg font-bold text-primary">{acwr.acute}</p>
-                <p className="text-[10px] text-muted">promedio strain diario</p>
+                <p className="text-[10px] text-muted">{t('strain.acwr.acuteDesc')}</p>
               </div>
               <div className="rounded-xl bg-surface px-3 py-2.5">
-                <p className="text-[10px] text-muted uppercase tracking-wider mb-1">Carga crónica (28d)</p>
+                <p className="text-[10px] text-muted uppercase tracking-wider mb-1">{t('strain.acwr.chronic')}</p>
                 <p className="text-lg font-bold text-primary">{acwr.chronic}</p>
-                <p className="text-[10px] text-muted">promedio strain diario</p>
+                <p className="text-[10px] text-muted">{t('strain.acwr.acuteDesc')}</p>
               </div>
             </div>
 
@@ -448,16 +455,16 @@ export default function StrainPage() {
                 <span className="text-[#f87171]">2.0</span>
               </div>
               <div className="flex justify-between text-[9px] text-muted mt-0.5 px-0.5">
-                <span className="text-[#38bdf8]">Bajo</span>
-                <span className="text-[#4ade80]">Óptimo</span>
-                <span className="text-[#facc15]">Moderado</span>
-                <span className="text-[#fb923c]">Alto</span>
-                <span className="text-[#f87171]">Peligro</span>
+                <span className="text-[#38bdf8]">{t('common.low')}</span>
+                <span className="text-[#4ade80]">{t('common.optimal')}</span>
+                <span className="text-[#facc15]">{t('common.moderate')}</span>
+                <span className="text-[#fb923c]">{t('common.high')}</span>
+                <span className="text-[#f87171]">{t('common.danger')}</span>
               </div>
             </div>
 
             <p className="text-[10px] text-muted border-t border-border pt-3">
-              ACWR (Gabbett, 2016): ratio &lt;0.8 = desentrenamiento, 0.8–1.3 = zona óptima (bajo riesgo), &gt;1.5 = riesgo elevado de lesión. Calculado sobre los últimos 30 días.
+              {t('strain.acwr.ref')}
             </p>
           </div>
         )}

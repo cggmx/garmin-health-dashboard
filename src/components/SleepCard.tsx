@@ -5,13 +5,7 @@ import type { SleepData } from '@/lib/types';
 import type { MetricBenchmark } from '@/lib/benchmarks';
 import { formatDuration } from '@/lib/scoring';
 import BenchmarkBadge from './ui/BenchmarkBadge';
-
-const STAGES = [
-  { key: 'deepSleepSeconds', label: 'Profundo', color: '#818cf8', target: 0.2 },
-  { key: 'remSleepSeconds', label: 'REM', color: '#c084fc', target: 0.25 },
-  { key: 'lightSleepSeconds', label: 'Ligero', color: '#38bdf8', target: 0.5 },
-  { key: 'awakeSleepSeconds', label: 'Despierto', color: '#404040', target: 0.05 },
-] as const;
+import { useLang } from '@/lib/i18n';
 
 interface Props {
   sleep: SleepData;
@@ -22,20 +16,28 @@ interface Props {
 }
 
 export default function SleepCard({ sleep, benchmark, isDemo }: Props) {
+  const { t } = useLang();
   const totalHours = sleep.totalSleepSeconds / 3600;
+
+  const STAGES = [
+    { key: 'deepSleepSeconds' as const, label: t('sleep.deep'), color: '#818cf8', target: 0.2 },
+    { key: 'remSleepSeconds' as const, label: t('sleep.rem'), color: '#c084fc', target: 0.25 },
+    { key: 'lightSleepSeconds' as const, label: t('sleep.light'), color: '#38bdf8', target: 0.5 },
+    { key: 'awakeSleepSeconds' as const, label: t('sleep.awake'), color: '#404040', target: 0.05 },
+  ];
 
   return (
     <div className="card">
       <div className="card-header">
         <Moon size={14} className="text-sleep" />
-        <span>Sueño</span>
+        <span>{t('sleep.title')}</span>
         <span className="ml-auto flex flex-col items-end">
           <span className="text-sm font-bold text-primary leading-none">
             {sleep.sleepScore}
             <span className="text-xs text-secondary ml-0.5">/ 100</span>
           </span>
           <span className="text-[9px] text-muted leading-none mt-0.5">
-            {isDemo ? 'estimado' : 'Garmin'}
+            {isDemo ? t('sleep.estimated') : t('sleep.garmin')}
           </span>
         </span>
       </div>
@@ -46,7 +48,7 @@ export default function SleepCard({ sleep, benchmark, isDemo }: Props) {
           {formatDuration(sleep.totalSleepSeconds)}
         </span>
         <span className="text-xs text-secondary mb-1">
-          {totalHours.toFixed(1)} de 8h recomendadas
+          {totalHours.toFixed(1)} {t('sleep.recommended')}
         </span>
       </div>
 
@@ -102,19 +104,19 @@ export default function SleepCard({ sleep, benchmark, isDemo }: Props) {
         <div className="flex gap-4 mt-3 pt-3 border-t border-border">
           {sleep.averageSpO2 > 0 && (
             <div className="flex flex-col">
-              <span className="text-[10px] text-secondary uppercase tracking-widest">SpO₂ media</span>
+              <span className="text-[10px] text-secondary uppercase tracking-widest">{t('sleep.spo2')}</span>
               <span className="text-sm font-bold text-primary">{sleep.averageSpO2.toFixed(1)}%</span>
             </div>
           )}
           {sleep.averageHRV > 0 && (
             <div className="flex flex-col">
-              <span className="text-[10px] text-secondary uppercase tracking-widest">HRV nocturno</span>
+              <span className="text-[10px] text-secondary uppercase tracking-widest">{t('sleep.hrvNight')}</span>
               <span className="text-sm font-bold text-primary">{sleep.averageHRV} ms</span>
             </div>
           )}
           {sleep.averageRespiration > 0 && (
             <div className="flex flex-col">
-              <span className="text-[10px] text-secondary uppercase tracking-widest">Resp.</span>
+              <span className="text-[10px] text-secondary uppercase tracking-widest">{t('sleep.resp')}</span>
               <span className="text-sm font-bold text-primary">{sleep.averageRespiration.toFixed(1)}</span>
             </div>
           )}

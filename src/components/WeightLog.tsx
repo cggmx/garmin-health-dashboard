@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { format, subDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useLang } from '@/lib/i18n';
 import { Scale, TrendingDown, TrendingUp, Minus, Trash2, Plus } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -35,6 +36,7 @@ function linearRegressionSlope(points: { date: string; weight: number }[]): numb
 }
 
 export default function WeightLog({ profile }: Props) {
+  const { t } = useLang();
   const { entries, addEntry, removeEntry, loaded } = useWeightLog();
   const [range, setRange] = useState<number>(30); // 30 | 90 | 0 (0 = all)
   const [inputDate, setInputDate] = useState(() => format(new Date(), 'yyyy-MM-dd'));
@@ -98,13 +100,13 @@ export default function WeightLog({ profile }: Props) {
     <div className="card">
       <div className="card-header mb-4">
         <Scale size={14} className="text-sky-400" />
-        <span>Registro de Peso</span>
+        <span>{t('weightLog.title')}</span>
         {visible.length >= 2 && (
           <span className="ml-auto text-xs font-semibold flex items-center gap-1" style={{ color: slopeColor }}>
             {slopePerWeek < -0.05 ? <TrendingDown size={11} /> :
              slopePerWeek > 0.05 ? <TrendingUp size={11} /> :
              <Minus size={11} />}
-            {slopePerWeek > 0 ? '+' : ''}{slopePerWeek} kg/sem
+            {slopePerWeek > 0 ? '+' : ''}{slopePerWeek} {t('weightLog.ratePerWeek')}
           </span>
         )}
       </div>
@@ -141,19 +143,19 @@ export default function WeightLog({ profile }: Props) {
       {entries.length >= 1 && (
         <div className="grid grid-cols-3 gap-2 mb-4">
           <div className="bg-bg rounded-xl p-2 text-center border border-border">
-            <p className="text-[10px] text-muted mb-0.5">Inicio</p>
+            <p className="text-[10px] text-muted mb-0.5">{t('weightLog.start')}</p>
             <p className="text-sm font-bold text-primary">
               {first?.weight} <span className="text-[10px] font-normal text-muted">kg</span>
             </p>
           </div>
           <div className="bg-bg rounded-xl p-2 text-center border border-border">
-            <p className="text-[10px] text-muted mb-0.5">Actual</p>
+            <p className="text-[10px] text-muted mb-0.5">{t('weightLog.current')}</p>
             <p className="text-sm font-bold text-primary">
               {last?.weight} <span className="text-[10px] font-normal text-muted">kg</span>
             </p>
           </div>
           <div className="bg-bg rounded-xl p-2 text-center border border-border">
-            <p className="text-[10px] text-muted mb-0.5">Cambio total</p>
+            <p className="text-[10px] text-muted mb-0.5">{t('weightLog.totalChange')}</p>
             <p
               className="text-sm font-bold"
               style={{
@@ -187,7 +189,7 @@ export default function WeightLog({ profile }: Props) {
                   fontWeight: range === r ? 600 : 400,
                 }}
               >
-                {r === 0 ? 'Todo' : `${r}d`}
+                {r === 0 ? t('weightLog.all') : `${r}d`}
               </button>
             ))}
           </div>
@@ -219,7 +221,7 @@ export default function WeightLog({ profile }: Props) {
                 }}
                 labelStyle={{ color: '#9ca3af' }}
                 itemStyle={{ color: '#38bdf8' }}
-                formatter={(v: number) => [`${v} kg`, 'Peso']}
+                formatter={(v: number) => [`${v} kg`, t('weightLog.weightLabel')]}
               />
               <Line
                 type="monotone"
@@ -234,17 +236,17 @@ export default function WeightLog({ profile }: Props) {
 
           {goalWeight !== null && (
             <p className="text-[10px] text-muted text-center mt-1">
-              ── ── Línea verde = objetivo ({goalWeight} kg)
+              {t('weightLog.goalLine', { goal: goalWeight })}
             </p>
           )}
         </>
       ) : entries.length === 1 ? (
         <p className="text-xs text-muted text-center py-4">
-          Añade al menos 2 registros para ver la gráfica de tendencia.
+          {t('weightLog.needMoreData')}
         </p>
       ) : (
         <p className="text-xs text-muted text-center py-4">
-          Registra tu peso diario para ver la evolución en el tiempo.
+          {t('weightLog.empty')}
         </p>
       )}
 
@@ -252,7 +254,7 @@ export default function WeightLog({ profile }: Props) {
       {historyEntries.length > 0 && (
         <div className="mt-4 border-t border-border pt-3">
           <p className="text-[10px] font-semibold text-muted uppercase tracking-widest mb-2">
-            Historial reciente
+            {t('weightLog.recentHistory')}
           </p>
           <div className="flex flex-col gap-1">
             {historyEntries.map(e => (

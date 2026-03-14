@@ -11,6 +11,7 @@ import {
   type NotificationSettings,
   type PermissionState,
 } from '@/lib/notifications';
+import { useLang } from '@/lib/i18n';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -23,6 +24,7 @@ function batteryColor(value: number) {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function NotificationSettings() {
+  const { t } = useLang();
   const [settings,    setSettings]    = useState<NotificationSettings>({ enabled: false, threshold: 30 });
   const [permission,  setPermission]  = useState<PermissionState>('default');
   const [testStatus,  setTestStatus]  = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
@@ -73,8 +75,8 @@ export default function NotificationSettings() {
   const handleTest = async () => {
     setTestStatus('sending');
     const ok = await sendNotification(
-      '⚡ Notificación de prueba',
-      `Body Battery al ${settings.threshold}% — así se verá la alerta cuando caiga por debajo de tu umbral.`,
+      t('notifications.testTitle'),
+      t('notifications.testBody', { threshold: settings.threshold }),
       'garmin-test',
     );
     setTestStatus(ok ? 'sent' : 'failed');
@@ -94,10 +96,10 @@ export default function NotificationSettings() {
       {/* Header */}
       <div className="card-header mb-4">
         <Bell size={14} className="text-battery" />
-        <span>Alertas de Body Battery</span>
+        <span>{t('notifications.title')}</span>
         {settings.enabled && isGranted && (
           <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-400/10 text-green-400 border border-green-400/20">
-            Activo
+            {t('notifications.active')}
           </span>
         )}
       </div>
@@ -107,7 +109,7 @@ export default function NotificationSettings() {
         <div className="flex items-start gap-2 p-3 rounded-xl bg-bg border border-border mb-4">
           <AlertCircle size={14} className="text-muted mt-0.5 flex-shrink-0" />
           <p className="text-xs text-muted">
-            Tu navegador no soporta notificaciones. Abre la app en Safari (iOS) o Chrome (Android).
+            {t('notifications.noSupport')}
           </p>
         </div>
       )}
@@ -117,9 +119,7 @@ export default function NotificationSettings() {
         <div className="flex items-start gap-2 p-3 rounded-xl bg-red-400/5 border border-red-400/20 mb-4">
           <XCircle size={14} className="text-recovery-red mt-0.5 flex-shrink-0" />
           <p className="text-xs text-secondary">
-            Permiso denegado. Ve a{' '}
-            <strong className="text-primary">Ajustes → Safari/Chrome → Notificaciones</strong>{' '}
-            y actívalas para este sitio.
+            {t('notifications.denied')}
           </p>
         </div>
       )}
@@ -129,14 +129,14 @@ export default function NotificationSettings() {
         <div className="flex items-center gap-3 p-3 rounded-xl bg-battery/5 border border-battery/20 mb-4">
           <BatteryLow size={14} className="text-battery flex-shrink-0" />
           <p className="text-xs text-secondary flex-1">
-            Necesita permiso para mostrarte alertas cuando tu batería baje.
+            {t('notifications.needPermission')}
           </p>
           <button
             onClick={handleRequestPermission}
             disabled={requesting}
             className="text-xs font-semibold text-battery px-3 py-1.5 rounded-lg bg-battery/10 hover:bg-battery/20 transition-colors disabled:opacity-50"
           >
-            {requesting ? 'Solicitando…' : 'Permitir'}
+            {requesting ? t('notifications.requesting') : t('notifications.allow')}
           </button>
         </div>
       )}
@@ -145,16 +145,16 @@ export default function NotificationSettings() {
       {isGranted && (
         <div className="flex items-center gap-2 mb-4">
           <CheckCircle2 size={13} className="text-recovery-green" />
-          <span className="text-[11px] text-secondary">Permiso concedido</span>
+          <span className="text-[11px] text-secondary">{t('notifications.granted')}</span>
         </div>
       )}
 
       {/* Main toggle */}
       <div className="flex items-center justify-between mb-5">
         <div>
-          <p className="text-xs font-semibold text-primary">Activar alertas</p>
+          <p className="text-xs font-semibold text-primary">{t('notifications.enable')}</p>
           <p className="text-[10px] text-muted mt-0.5">
-            Notificación cuando Body Battery baje del umbral
+            {t('notifications.alertDesc')}
           </p>
         </div>
         <button
@@ -181,7 +181,7 @@ export default function NotificationSettings() {
         <>
           <div className="mb-2">
             <div className="flex items-center justify-between mb-1">
-              <p className="text-xs font-semibold text-primary">Umbral de alerta</p>
+              <p className="text-xs font-semibold text-primary">{t('notifications.thresholdLabel')}</p>
               <div className="flex items-center gap-1">
                 <Zap size={11} style={{ color: thresholdColor }} />
                 <span
@@ -193,7 +193,7 @@ export default function NotificationSettings() {
               </div>
             </div>
             <p className="text-[10px] text-muted mb-3">
-              Recibirás una alerta cuando tu Body Battery caiga a este nivel o menos.
+              {t('notifications.thresholdNote')}
             </p>
 
             {/* Visual bar showing threshold on battery scale */}
@@ -233,13 +233,13 @@ export default function NotificationSettings() {
           {/* Hint by level */}
           <div className="text-[10px] text-muted mt-1 mb-4 flex items-center gap-1">
             {settings.threshold <= 20 && (
-              <><AlertCircle size={10} className="text-recovery-red" /> Alerta agresiva — solo para niveles críticos</>
+              <><AlertCircle size={10} className="text-recovery-red" /> {t('notifications.thresholdHints.low')}</>
             )}
             {settings.threshold > 20 && settings.threshold <= 35 && (
-              <><CheckCircle2 size={10} className="text-recovery-green" /> Umbral recomendado por Garmin</>
+              <><CheckCircle2 size={10} className="text-recovery-green" /> {t('notifications.thresholdHints.mid')}</>
             )}
             {settings.threshold > 35 && (
-              <><Bell size={10} className="text-yellow-400" /> Umbral conservador — alertas más frecuentes</>
+              <><Bell size={10} className="text-yellow-400" /> {t('notifications.thresholdHints.high')}</>
             )}
           </div>
 
@@ -249,10 +249,10 @@ export default function NotificationSettings() {
             disabled={testStatus === 'sending'}
             className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-bg border border-border text-xs text-secondary hover:text-primary hover:border-battery/30 transition-colors disabled:opacity-50"
           >
-            {testStatus === 'idle'    && <><Bell size={12} /> Enviar notificación de prueba</>}
-            {testStatus === 'sending' && <><span className="animate-pulse">…</span> Enviando…</>}
-            {testStatus === 'sent'    && <><CheckCircle2 size={12} className="text-recovery-green" /> ¡Notificación enviada!</>}
-            {testStatus === 'failed'  && <><XCircle size={12} className="text-recovery-red" /> Error — ¿está la app en primer plano?</>}
+            {testStatus === 'idle'    && <><Bell size={12} /> {t('notifications.testBtn')}</>}
+            {testStatus === 'sending' && <><span className="animate-pulse">…</span> {t('notifications.sending')}</>}
+            {testStatus === 'sent'    && <><CheckCircle2 size={12} className="text-recovery-green" /> {t('notifications.sent')}</>}
+            {testStatus === 'failed'  && <><XCircle size={12} className="text-recovery-red" /> {t('notifications.error')}</>}
           </button>
         </>
       )}
@@ -260,7 +260,7 @@ export default function NotificationSettings() {
       {/* Cooldown note */}
       {settings.enabled && isGranted && (
         <p className="text-[9px] text-muted mt-3 text-center">
-          Se envía máximo 1 alerta por hora para evitar spam · La app verifica cada 15 min
+          {t('notifications.rateLimitNote')}
         </p>
       )}
 
@@ -269,7 +269,7 @@ export default function NotificationSettings() {
         <div className="flex items-center gap-2 mt-1">
           <BellOff size={12} className="text-muted" />
           <p className="text-[10px] text-muted">
-            Activa el toggle para recibir alertas automáticas de Body Battery.
+            {t('notifications.inactiveNote')}
           </p>
         </div>
       )}

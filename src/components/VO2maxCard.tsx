@@ -3,16 +3,8 @@
 import { Heart } from 'lucide-react';
 import { calculateVO2max, getVO2maxCategory } from '@/lib/scoring';
 import type { Sex } from '@/lib/types';
+import { useLang } from '@/lib/i18n';
 
-const CATEGORY_LABEL: Record<string, string> = {
-  superior:  'Superior',
-  excelente: 'Excelente',
-  bueno:     'Bueno',
-  promedio:  'Promedio',
-  bajo:      'Bajo',
-};
-
-// Approximate percentile ranges per category for display
 const CATEGORY_PERCENTILE: Record<string, string> = {
   superior:  'Top 5%',
   excelente: 'Top 20%',
@@ -29,28 +21,37 @@ interface Props {
 }
 
 export default function VO2maxCard({ restingHR, age, sex, observedMaxHR }: Props) {
+  const { t } = useLang();
   if (!restingHR || restingHR < 30) return null;
 
   const vo2max = calculateVO2max(restingHR, age, observedMaxHR);
   const norm = getVO2maxCategory(vo2max, age, sex);
+
+  const CATEGORY_LABEL: Record<string, string> = {
+    superior:  t('vo2max.categories.superior'),
+    excelente: t('vo2max.categories.excellent'),
+    bueno:     t('vo2max.categories.good'),
+    promedio:  t('vo2max.categories.average'),
+    bajo:      t('vo2max.categories.low'),
+  };
 
   // Bar: map vo2 to 0–100% on a 20–70 scale
   const barPct = Math.min(100, Math.max(0, ((vo2max - 20) / 50) * 100));
 
   // Category thresholds for the bar markers (male 30-39 as reference)
   const segments = [
-    { label: 'Bajo',      pct: 0,   color: '#f87171' },
-    { label: 'Prom.',     pct: 20,  color: '#fb923c' },
-    { label: 'Bueno',     pct: 40,  color: '#facc15' },
-    { label: 'Excelente', pct: 60,  color: '#86efac' },
-    { label: 'Superior',  pct: 80,  color: '#4ade80' },
+    { label: t('vo2max.chartLabels.low'),       pct: 0,   color: '#f87171' },
+    { label: t('vo2max.chartLabels.avg'),        pct: 20,  color: '#fb923c' },
+    { label: t('vo2max.chartLabels.good'),       pct: 40,  color: '#facc15' },
+    { label: t('vo2max.chartLabels.excellent'),  pct: 60,  color: '#86efac' },
+    { label: t('vo2max.chartLabels.superior'),   pct: 80,  color: '#4ade80' },
   ];
 
   return (
     <div className="card">
       <div className="card-header mb-4">
         <Heart size={14} className="text-secondary" />
-        <span>VO2max estimado</span>
+        <span>{t('vo2max.title')}</span>
         <span
           className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full"
           style={{ color: norm.color, backgroundColor: `${norm.color}18` }}
@@ -65,7 +66,7 @@ export default function VO2maxCard({ restingHR, age, sex, observedMaxHR }: Props
           {vo2max}
         </span>
         <div className="mb-1">
-          <p className="text-sm text-secondary leading-tight">mL/kg/min</p>
+          <p className="text-sm text-secondary leading-tight">{t('vo2max.unit')}</p>
           <p className="text-xs text-muted mt-0.5">{CATEGORY_PERCENTILE[norm.label]}</p>
         </div>
       </div>
@@ -100,24 +101,24 @@ export default function VO2maxCard({ restingHR, age, sex, observedMaxHR }: Props
       <div className="flex gap-3 py-2 px-3 rounded-xl bg-bg border border-border">
         <div className="text-center">
           <p className="text-xs font-semibold text-primary">{restingHR}</p>
-          <p className="text-[9px] text-muted">FC reposo</p>
+          <p className="text-[9px] text-muted">{t('vo2max.inputs.restingHR')}</p>
         </div>
         <div className="w-px bg-border" />
         <div className="text-center">
           <p className="text-xs font-semibold text-primary">
             {observedMaxHR && observedMaxHR > 100 ? observedMaxHR : Math.round(208 - 0.7 * age)}
           </p>
-          <p className="text-[9px] text-muted">FC máx{observedMaxHR && observedMaxHR > 100 ? ' (real)' : ' (est.)'}</p>
+          <p className="text-[9px] text-muted">{observedMaxHR && observedMaxHR > 100 ? t('vo2max.inputs.maxHRReal') : t('vo2max.inputs.maxHREstimated')}</p>
         </div>
         <div className="w-px bg-border" />
         <div className="text-center flex-1">
-          <p className="text-xs font-semibold text-primary">Uth (2004)</p>
-          <p className="text-[9px] text-muted">15.3 × FCmax / FCrest</p>
+          <p className="text-xs font-semibold text-primary">{t('vo2max.formula')}</p>
+          <p className="text-[9px] text-muted">{t('vo2max.formulaDetail')}</p>
         </div>
       </div>
 
       <p className="text-[10px] text-muted border-t border-border pt-3 mt-3">
-        Estimación basada en FC reposo + FC máx. Para mayor precisión, realiza un test de campo (Cooper 12 min o rampa máxima).
+        {t('vo2max.note')}
       </p>
     </div>
   );

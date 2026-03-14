@@ -11,14 +11,9 @@ import { computeBenchmarks } from '@/lib/benchmarks';
 import type { ProfileBenchmarks } from '@/lib/benchmarks';
 import BenchmarkBadge from '@/components/ui/BenchmarkBadge';
 import BottomNav from '@/components/BottomNav';
+import { useLang } from '@/lib/i18n';
 
 const HRV_COLOR = '#c084fc';
-
-const STATUS_META: Record<string, { label: string; color: string; desc: string }> = {
-  balanced:   { label: 'Equilibrado',    color: '#4ade80', desc: 'Tu sistema nervioso autónomo está bien regulado.' },
-  unbalanced: { label: 'Desequilibrado', color: '#facc15', desc: 'Mayor actividad simpática ("lucha o huida") detectada.' },
-  poor:       { label: 'Bajo',           color: '#f87171', desc: 'Sistema nervioso bajo estrés. Prioriza el descanso.' },
-};
 
 // Relative-to-baseline zone for a single data point
 function zoneColor(hrv: number, median: number): string {
@@ -38,11 +33,18 @@ function buildDateLabels(points: TrendPoint[], step: number): (string | null)[] 
 }
 
 export default function HRVPage() {
+  const { t } = useLang();
   const [data, setData] = useState<DailyMetrics | null>(null);
   const [trends, setTrends] = useState<TrendPoint[] | null>(null);
   const [trendsLoading, setTrendsLoading] = useState(true);
 
   const { profile, loaded: profileLoaded } = useProfile();
+
+  const STATUS_META: Record<string, { label: string; color: string; desc: string }> = {
+    balanced:   { label: t('hrv.states.balanced'),    color: '#4ade80', desc: t('hrv.states.balancedDesc') },
+    unbalanced: { label: t('hrv.states.unbalanced'),  color: '#facc15', desc: t('hrv.states.unbalancedDesc') },
+    poor:       { label: t('hrv.states.low'),          color: '#f87171', desc: t('hrv.states.lowDesc') },
+  };
 
   useEffect(() => {
     const localDate = format(new Date(), 'yyyy-MM-dd');
@@ -72,7 +74,7 @@ export default function HRVPage() {
               <ArrowLeft size={18} />
             </Link>
             <Activity size={16} style={{ color: HRV_COLOR }} />
-            <h1 className="text-sm font-bold text-primary">Variabilidad Cardíaca</h1>
+            <h1 className="text-sm font-bold text-primary">{t('hrv.title')}</h1>
           </div>
         </header>
         <main className="max-w-md mx-auto px-4 pb-28 pt-4 flex flex-col gap-4">
@@ -118,7 +120,7 @@ export default function HRVPage() {
             <ArrowLeft size={18} />
           </Link>
           <Activity size={16} style={{ color: HRV_COLOR }} />
-          <h1 className="text-sm font-bold text-primary">Variabilidad Cardíaca</h1>
+          <h1 className="text-sm font-bold text-primary">{t('hrv.title')}</h1>
         </div>
       </header>
 
@@ -173,8 +175,8 @@ export default function HRVPage() {
         <div className="card">
           <div className="card-header mb-4">
             <Activity size={14} style={{ color: HRV_COLOR }} />
-            <span>Tendencia 7 días</span>
-            <span className="ml-auto text-xs text-muted">media: {avg7} ms</span>
+            <span>{t('hrv.trend7d')}</span>
+            <span className="ml-auto text-xs text-muted">{t('hrv.avg7dLabel', { avg: avg7 })}</span>
           </div>
 
           <div className="flex items-end justify-between gap-1.5 h-24 relative">
@@ -208,9 +210,9 @@ export default function HRVPage() {
 
           {/* Min/max */}
           <div className="flex justify-between mt-3 text-xs text-secondary border-t border-border pt-3">
-            <span>Mín: <span className="text-primary">{hrv7.length ? Math.min(...hrv7) : '—'} ms</span></span>
-            <span>Máx: <span className="text-primary">{hrv7.length ? Math.max(...hrv7) : '—'} ms</span></span>
-            <span>Media: <span className="text-primary">{avg7} ms</span></span>
+            <span>{t('hrv.min7dLabel', { min: hrv7.length ? Math.min(...hrv7) : '—' })}</span>
+            <span>{t('hrv.max7dLabel', { max: hrv7.length ? Math.max(...hrv7) : '—' })}</span>
+            <span>{t('hrv.avg7dLabel', { avg: avg7 })}</span>
           </div>
         </div>
 
@@ -218,17 +220,17 @@ export default function HRVPage() {
         <div className="card">
           <div className="card-header mb-4">
             <Activity size={14} style={{ color: HRV_COLOR }} />
-            <span>Tendencia 30 días</span>
-            {trendsLoading && <span className="ml-auto text-xs text-muted">cargando…</span>}
+            <span>{t('hrv.trend30d')}</span>
+            {trendsLoading && <span className="ml-auto text-xs text-muted">{t('hrv.loading')}</span>}
             {!trendsLoading && trends && (
-              <span className="ml-auto text-xs text-muted">mediana: {median30} ms</span>
+              <span className="ml-auto text-xs text-muted">{t('hrv.median30d', { median: median30 })}</span>
             )}
           </div>
 
           {!trendsLoading && !trends && (
             <div className="text-center py-6">
-              <p className="text-xs text-secondary">Sin datos históricos</p>
-              <p className="text-[10px] text-muted mt-1">Configura credenciales de Garmin para ver 30 días.</p>
+              <p className="text-xs text-secondary">{t('hrv.noHistory')}</p>
+              <p className="text-[10px] text-muted mt-1">{t('hrv.noHistoryDesc')}</p>
             </div>
           )}
 
@@ -293,7 +295,7 @@ export default function HRVPage() {
           <div className="card">
             <div className="card-header mb-3">
               <Activity size={14} style={{ color: HRV_COLOR }} />
-              <span>Comparación demográfica</span>
+              <span>{t('hrv.zones.demographicTitle')}</span>
             </div>
             <BenchmarkBadge benchmark={benchmarks.hrv} />
           </div>
@@ -303,14 +305,14 @@ export default function HRVPage() {
         <div className="card">
           <div className="card-header mb-3">
             <Info size={14} className="text-secondary" />
-            <span>Zonas relativas a tu baseline</span>
+            <span>{t('hrv.zones.zoneTitle')}</span>
           </div>
           <div className="flex flex-col gap-2">
             {[
-              { label: 'Recuperación excelente', range: '>+10% sobre tu media', color: '#4ade80', desc: 'Sistema nervioso bien adaptado. Día ideal para entrenar fuerte.' },
-              { label: 'Rango normal',           range: '±10% de tu media',     color: HRV_COLOR, desc: 'Estado equilibrado. Sigue tu plan habitual.' },
-              { label: 'Ligero estrés',          range: '−10% a −25%',          color: '#facc15', desc: 'Algo de fatiga acumulada. Opta por actividad moderada.' },
-              { label: 'Estrés significativo',   range: '<−25% de tu media',    color: '#f87171', desc: 'Alta carga acumulada. Día de descanso activo recomendado.' },
+              { label: t('hrv.zones.excellent'),    range: t('hrv.zones.excellentThreshold'), color: '#4ade80', desc: t('hrv.zones.excellentDesc') },
+              { label: t('hrv.zones.normal'),       range: t('hrv.zones.normalThreshold'),    color: HRV_COLOR, desc: t('hrv.zones.normalDesc') },
+              { label: t('hrv.zones.slight'),       range: t('hrv.zones.slightThreshold'),    color: '#facc15', desc: t('hrv.zones.slightDesc') },
+              { label: t('hrv.zones.significant'),  range: t('hrv.zones.significantThreshold'), color: '#f87171', desc: t('hrv.zones.significantDesc') },
             ].map(z => (
               <div key={z.label} className="flex items-start gap-3 py-2 border-b border-border last:border-0">
                 <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: z.color }} />
@@ -330,35 +332,35 @@ export default function HRVPage() {
         <div className="card">
           <div className="card-header mb-3">
             <Info size={14} className="text-secondary" />
-            <span>¿Qué es la VFC y cómo usarla?</span>
+            <span>{t('hrv.info.title')}</span>
           </div>
 
           <div className="flex flex-col gap-4 text-xs text-secondary">
 
             <div>
-              <p className="font-semibold text-primary mb-1">¿Qué mide?</p>
-              <p>La VFC (HRV, rMSSD) mide la variación en milisegundos entre latidos consecutivos. No es el ritmo cardíaco en sí, sino cuánto varía de un latido al siguiente durante el sueño.</p>
+              <p className="font-semibold text-primary mb-1">{t('hrv.info.whatTitle')}</p>
+              <p>{t('hrv.info.whatDesc')}</p>
             </div>
 
             <div>
-              <p className="font-semibold text-primary mb-1">¿Por qué importa?</p>
-              <p>Refleja el estado del sistema nervioso autónomo. Una VFC alta indica que el sistema parasimpático ("descanso y digestión") domina — señal de buena recuperación y adaptación al entrenamiento. Una VFC baja sugiere activación simpática por estrés, fatiga o enfermedad.</p>
+              <p className="font-semibold text-primary mb-1">{t('hrv.info.whyTitle')}</p>
+              <p>{t('hrv.info.whyDesc')}</p>
             </div>
 
             <div>
-              <p className="font-semibold text-primary mb-1">Cómo interpretarla correctamente</p>
-              <p className="mb-1">Los valores absolutos varían mucho entre personas (20–120 ms es normal según edad y condición física). Lo importante es <span className="text-primary font-medium">tu tendencia personal</span>, no el valor absoluto:</p>
+              <p className="font-semibold text-primary mb-1">{t('hrv.info.howTitle')}</p>
+              <p className="mb-1">{t('hrv.info.howDesc')}</p>
               <ul className="space-y-1 list-disc list-inside text-secondary">
-                <li>Compara siempre con tu propia media de los últimos 7–30 días</li>
-                <li>Una sola noche baja no es preocupante — busca tendencias de 3–5 días</li>
-                <li>La VFC varía naturalmente: ciclo menstrual, altitud, calor también la afectan</li>
+                <li>{t('hrv.info.tip1')}</li>
+                <li>{t('hrv.info.tip2')}</li>
+                <li>{t('hrv.info.tip3')}</li>
               </ul>
             </div>
 
             <div>
-              <p className="font-semibold text-primary mb-1">Factores que la reducen</p>
+              <p className="font-semibold text-primary mb-1">{t('hrv.info.reducersTitle')}</p>
               <div className="grid grid-cols-2 gap-1.5 mt-1">
-                {['Alcohol', 'Sueño insuficiente', 'Sobrentrenamiento', 'Estrés elevado', 'Enfermedad / infección', 'Deshidratación'].map(f => (
+                {(t('hrv.info.reducers') as unknown as string[]).map((f: string) => (
                   <div key={f} className="flex items-center gap-1.5 text-[11px]">
                     <span className="text-recovery-red">↓</span>
                     <span>{f}</span>
@@ -368,9 +370,9 @@ export default function HRVPage() {
             </div>
 
             <div>
-              <p className="font-semibold text-primary mb-1">Factores que la mejoran</p>
+              <p className="font-semibold text-primary mb-1">{t('hrv.info.improversTitle')}</p>
               <div className="grid grid-cols-2 gap-1.5 mt-1">
-                {['Sueño de calidad', 'Meditación', 'Respiración profunda', 'Entrenamiento regular', 'Buena hidratación', 'Tiempo de recuperación'].map(f => (
+                {(t('hrv.info.improvers') as unknown as string[]).map((f: string) => (
                   <div key={f} className="flex items-center gap-1.5 text-[11px]">
                     <span className="text-recovery-green">↑</span>
                     <span>{f}</span>
@@ -382,7 +384,7 @@ export default function HRVPage() {
           </div>
 
           <p className="text-[10px] text-muted mt-4 pt-3 border-t border-border">
-            Basado en investigación publicada: Shaffer & Ginsberg (2017), Plews et al. (2013). Garmin usa rMSSD — la métrica más fiable y menos sensible a ruido de movimiento.
+            {t('hrv.info.ref')}
           </p>
         </div>
 

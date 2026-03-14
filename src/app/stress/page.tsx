@@ -10,27 +10,13 @@ import {
   ResponsiveContainer, AreaChart, Area, Tooltip,
   ReferenceLine, XAxis, YAxis,
 } from 'recharts';
-
-const ZONES = [
-  { key: 'rest'     as const, label: 'Reposo',   color: '#4ade80', range: '0–25'   },
-  { key: 'low'      as const, label: 'Bajo',      color: '#facc15', range: '26–50'  },
-  { key: 'moderate' as const, label: 'Moderado',  color: '#fb923c', range: '51–75'  },
-  { key: 'high'     as const, label: 'Alto',      color: '#f87171', range: '76–100' },
-];
+import { useLang } from '@/lib/i18n';
 
 function stressColor(v: number) {
   if (v <= 25) return '#4ade80';
   if (v <= 50) return '#facc15';
   if (v <= 75) return '#fb923c';
   return '#f87171';
-}
-
-function stressLabel(avg: number) {
-  if (avg <= 25) return 'Muy bajo';
-  if (avg <= 40) return 'Bajo';
-  if (avg <= 55) return 'Moderado';
-  if (avg <= 70) return 'Elevado';
-  return 'Alto';
 }
 
 function computeZones(data: Array<{ time: string; value: number }>) {
@@ -45,7 +31,23 @@ function computeZones(data: Array<{ time: string; value: number }>) {
 }
 
 export default function StressPage() {
+  const { t } = useLang();
   const [data, setData] = useState<DailyMetrics | null>(null);
+
+  const ZONES = [
+    { key: 'rest'     as const, label: t('stress.levels.rest'),     color: '#4ade80', range: '0–25'   },
+    { key: 'low'      as const, label: t('common.low'),              color: '#facc15', range: '26–50'  },
+    { key: 'moderate' as const, label: t('common.moderate'),         color: '#fb923c', range: '51–75'  },
+    { key: 'high'     as const, label: t('common.high'),             color: '#f87171', range: '76–100' },
+  ];
+
+  function stressLabel(avg: number) {
+    if (avg <= 25) return t('stress.levels.veryLow');
+    if (avg <= 40) return t('stress.levels.low');
+    if (avg <= 55) return t('stress.levels.moderate');
+    if (avg <= 70) return t('stress.levels.elevated');
+    return t('stress.levels.high');
+  }
 
   useEffect(() => {
     const localDate = format(new Date(), 'yyyy-MM-dd');
@@ -61,7 +63,7 @@ export default function StressPage() {
               <ArrowLeft size={18} />
             </Link>
             <Brain size={16} className="text-stress" />
-            <h1 className="text-sm font-bold text-primary">Estrés</h1>
+            <h1 className="text-sm font-bold text-primary">{t('stress.title')}</h1>
           </div>
         </header>
         <main className="max-w-md mx-auto px-4 pb-28 pt-4 flex flex-col gap-4">
@@ -96,7 +98,7 @@ export default function StressPage() {
             <ArrowLeft size={18} />
           </Link>
           <Brain size={16} className="text-stress" />
-          <h1 className="text-sm font-bold text-primary">Estrés</h1>
+          <h1 className="text-sm font-bold text-primary">{t('stress.title')}</h1>
           <span
             className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full"
             style={{ color: avgColor, backgroundColor: `${avgColor}18` }}
@@ -112,7 +114,7 @@ export default function StressPage() {
         <div className="card">
           <div className="card-header mb-4">
             <Brain size={14} className="text-stress" />
-            <span>Nivel de estrés hoy</span>
+            <span>{t('stress.todayLevel')}</span>
           </div>
 
           <div className="flex items-end gap-4 mb-5">
@@ -123,7 +125,7 @@ export default function StressPage() {
               <p className="text-sm font-semibold" style={{ color: avgColor }}>
                 {stressLabel(stress.average)}
               </p>
-              <p className="text-xs text-muted">Escala Garmin 0–100</p>
+              <p className="text-xs text-muted">{t('stress.scale')}</p>
             </div>
           </div>
 
@@ -140,24 +142,24 @@ export default function StressPage() {
             />
           </div>
           <div className="flex justify-between text-[9px] text-muted mb-4">
-            <span className="text-green-400">Reposo</span>
-            <span className="text-yellow-400">Bajo</span>
-            <span className="text-orange-400">Moderado</span>
-            <span className="text-red-400">Alto</span>
+            <span className="text-green-400">{t('stress.levels.rest')}</span>
+            <span className="text-yellow-400">{t('common.low')}</span>
+            <span className="text-orange-400">{t('common.moderate')}</span>
+            <span className="text-red-400">{t('common.high')}</span>
           </div>
 
           {/* Mini stats */}
           <div className="grid grid-cols-3 gap-2">
             <div className="bg-bg rounded-xl p-2 text-center border border-border">
-              <p className="text-[10px] text-muted mb-0.5">Pico</p>
+              <p className="text-[10px] text-muted mb-0.5">{t('stress.levels.peak')}</p>
               <p className="text-sm font-bold" style={{ color: stressColor(peak) }}>{peak}</p>
             </div>
             <div className="bg-bg rounded-xl p-2 text-center border border-border">
-              <p className="text-[10px] text-muted mb-0.5">En reposo</p>
+              <p className="text-[10px] text-muted mb-0.5">{t('stress.levels.atRest')}</p>
               <p className="text-sm font-bold text-green-400">{stress.restingPercentage}%</p>
             </div>
             <div className="bg-bg rounded-xl p-2 text-center border border-border">
-              <p className="text-[10px] text-muted mb-0.5">Tensión</p>
+              <p className="text-[10px] text-muted mb-0.5">{t('stress.levels.tension')}</p>
               <p className="text-sm font-bold" style={{ color: tensionPct > 40 ? '#f87171' : '#facc15' }}>
                 {tensionPct}%
               </p>
@@ -170,8 +172,8 @@ export default function StressPage() {
           <div className="card">
             <div className="card-header mb-4">
               <Zap size={14} className="text-secondary" />
-              <span>Timeline del día</span>
-              <span className="ml-auto text-xs text-muted">{stress.data.length} mediciones</span>
+              <span>{t('stress.timeline')}</span>
+              <span className="ml-auto text-xs text-muted">{t('stress.measurements', { count: stress.data.length })}</span>
             </div>
 
             <ResponsiveContainer width="100%" height={150}>
@@ -232,7 +234,7 @@ export default function StressPage() {
         <div className="card">
           <div className="card-header mb-4">
             <Brain size={14} className="text-secondary" />
-            <span>Distribución por zonas</span>
+            <span>{t('stress.distribution')}</span>
           </div>
 
           {/* Stacked bar */}
@@ -267,8 +269,8 @@ export default function StressPage() {
         <div className="card">
           <div className="card-header mb-4">
             <TrendingUp size={14} className="text-secondary" />
-            <span>Indicador semanal</span>
-            <span className="ml-auto text-[10px] text-muted">100 − recuperación</span>
+            <span>{t('stress.weeklyIndicator')}</span>
+            <span className="ml-auto text-[10px] text-muted">{t('stress.weeklyFormula')}</span>
           </div>
 
           <div className="flex items-end justify-between gap-1.5 h-24">
@@ -299,7 +301,7 @@ export default function StressPage() {
           </div>
 
           <p className="text-[10px] text-muted mt-3 pt-3 border-t border-border">
-            Estimado a partir del score de recuperación diaria (100 − recuperación). Una recuperación baja suele correlacionar con carga fisiológica elevada.
+            {t('stress.weeklyNote')}
           </p>
         </div>
 
@@ -307,25 +309,25 @@ export default function StressPage() {
         <div className="card">
           <div className="card-header mb-4">
             <Brain size={14} className="text-stress" />
-            <span>¿Qué mide el estrés Garmin?</span>
+            <span>{t('stress.info.title')}</span>
           </div>
 
           <div className="space-y-3">
             <div className="p-3 rounded-xl bg-bg border border-border">
-              <p className="text-xs font-semibold text-primary mb-1">Basado en HRV, no en emociones</p>
+              <p className="text-xs font-semibold text-primary mb-1">{t('stress.info.hrvTitle')}</p>
               <p className="text-[11px] text-secondary leading-relaxed">
-                Garmin mide el estrés fisiológico analizando la variabilidad entre latidos (rMSSD). No detecta estrés psicológico directamente: el ejercicio intenso también eleva el marcador porque activa el sistema nervioso simpático.
+                {t('stress.info.hrvDesc')}
               </p>
             </div>
 
             <div className="p-3 rounded-xl bg-bg border border-border">
-              <p className="text-xs font-semibold text-primary mb-2">Zonas de referencia</p>
+              <p className="text-xs font-semibold text-primary mb-2">{t('stress.info.zonesTitle')}</p>
               <div className="space-y-2">
                 {[
-                  { label: '0–25 · Reposo',   color: '#4ade80', desc: 'Sistema parasimpático activo — HRV alto' },
-                  { label: '26–50 · Bajo',    color: '#facc15', desc: 'Actividad ligera o estrés leve controlado' },
-                  { label: '51–75 · Moderado',color: '#fb923c', desc: 'Carga media — ejercicio o concentración sostenida' },
-                  { label: '76–100 · Alto',   color: '#f87171', desc: 'Sistema simpático dominante — prioriza recuperación' },
+                  { label: t('stress.info.zone1'), color: '#4ade80', desc: t('stress.info.zone1Desc') },
+                  { label: t('stress.info.zone2'), color: '#facc15', desc: t('stress.info.zone2Desc') },
+                  { label: t('stress.info.zone3'), color: '#fb923c', desc: t('stress.info.zone3Desc') },
+                  { label: t('stress.info.zone4'), color: '#f87171', desc: t('stress.info.zone4Desc') },
                 ].map(z => (
                   <div key={z.label} className="flex items-start gap-2">
                     <div className="w-2 h-2 rounded-full mt-0.5 flex-shrink-0" style={{ backgroundColor: z.color }} />
@@ -339,13 +341,13 @@ export default function StressPage() {
             </div>
 
             <div className="p-3 rounded-xl bg-bg border border-border">
-              <p className="text-xs font-semibold text-primary mb-2">Cómo reducir el estrés fisiológico</p>
+              <p className="text-xs font-semibold text-primary mb-2">{t('stress.info.tipsTitle')}</p>
               <ul className="space-y-1.5">
                 {[
-                  'Respiración 4-7-8: inhala 4s, aguanta 7s, exhala 8s — baja el indicador en minutos',
-                  'Sueño de calidad: el factor con mayor impacto en HRV nocturno y recuperación',
-                  'Evita alcohol y cafeína después de las 14h — elevan el estrés nocturno',
-                  'Actividad suave (caminata, yoga, estiramientos) activa el nervio vago',
+                  t('stress.info.tip1'),
+                  t('stress.info.tip2'),
+                  t('stress.info.tip3'),
+                  t('stress.info.tip4'),
                 ].map((tip, i) => (
                   <li key={i} className="flex items-start gap-2 text-[11px] text-secondary">
                     <span className="text-stress mt-0.5 flex-shrink-0">·</span>
@@ -356,7 +358,7 @@ export default function StressPage() {
             </div>
 
             <p className="text-[10px] text-muted text-center pt-1">
-              Ref: Thayer et al. 2012 — HRV as a biomarker of stress
+              {t('stress.info.ref')}
             </p>
           </div>
         </div>

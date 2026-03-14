@@ -13,30 +13,32 @@ import VO2maxCard from '@/components/VO2maxCard';
 import TrainingZonesCard from '@/components/TrainingZonesCard';
 import type { UserProfile } from '@/lib/types';
 import { getWeightBenchmark } from '@/lib/benchmarks';
-
-const FITNESS_LABEL: Record<string, string> = {
-  beginner:     'Principiante',
-  intermediate: 'Intermedio',
-  advanced:     'Avanzado',
-  athlete:      'Atleta',
-};
-
-const GOAL_LABEL: Record<string, string> = {
-  recovery:       'Recuperación',
-  performance:    'Rendimiento',
-  weight_loss:    'Pérdida de peso',
-  general_health: 'Salud general',
-};
-
-const WEIGHT_GOAL_LABEL: Record<string, string> = {
-  lose:     'Objetivo: perder peso',
-  maintain: 'Objetivo: mantener peso',
-  gain:     'Objetivo: ganar peso',
-};
+import { useLang } from '@/lib/i18n';
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { t } = useLang();
   const { profile, saveProfile, clearProfile, loaded } = useProfile();
+
+  const FITNESS_LABEL: Record<string, string> = {
+    beginner:     t('profile.fitnessLevels.beginner'),
+    intermediate: t('profile.fitnessLevels.intermediate'),
+    advanced:     t('profile.fitnessLevels.advanced'),
+    athlete:      t('profile.fitnessLevels.athlete'),
+  };
+
+  const GOAL_LABEL: Record<string, string> = {
+    recovery:       t('profile.goals.recovery'),
+    performance:    t('profile.goals.performance'),
+    weight_loss:    t('profile.goals.weight_loss'),
+    general_health: t('profile.goals.general_health'),
+  };
+
+  const WEIGHT_GOAL_LABEL: Record<string, string> = {
+    lose:     t('profile.weightGoals.lose'),
+    maintain: t('profile.weightGoals.maintain'),
+    gain:     t('profile.weightGoals.gain'),
+  };
 
   const [lastRHR, setLastRHR] = useState(0);
   const [observedMaxHR, setObservedMaxHR] = useState<number | undefined>(undefined);
@@ -61,7 +63,7 @@ export default function ProfilePage() {
   };
 
   const handleClear = () => {
-    if (confirm('¿Eliminar tu perfil? Se borrarán todos tus datos locales.')) {
+    if (confirm(t('profile.deleteConfirm'))) {
       clearProfile();
     }
   };
@@ -81,7 +83,7 @@ export default function ProfilePage() {
             <ArrowLeft size={18} />
           </Link>
           <User size={16} className="text-secondary" />
-          <h1 className="text-sm font-bold text-primary">Mi perfil</h1>
+          <h1 className="text-sm font-bold text-primary">{t('profile.title')}</h1>
         </div>
       </header>
 
@@ -95,7 +97,7 @@ export default function ProfilePage() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-primary truncate">
-                {profile.name ?? (profile.sex === 'male' ? 'Hombre' : 'Mujer')}, {profile.age} años
+                {profile.name ?? (profile.sex === 'male' ? t('profile.male') : t('profile.female'))}, {profile.age} {t('common.units.years') as string || 'años'}
               </p>
               <p className="text-xs text-secondary">
                 {FITNESS_LABEL[profile.fitnessLevel]} · {GOAL_LABEL[profile.goal]}
@@ -115,7 +117,7 @@ export default function ProfilePage() {
           <div className="card">
             <div className="card-header mb-4">
               <Scale size={14} className="text-secondary" />
-              <span>Índice de Masa Corporal</span>
+              <span>{t('profile.bmiSection')}</span>
               <span
                 className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full"
                 style={{ color: wb.color, backgroundColor: `${wb.color}18` }}
@@ -133,7 +135,7 @@ export default function ProfilePage() {
                 <p className="text-sm text-secondary leading-tight">{wb.description}</p>
                 {wb.direction !== 'ok' && (
                   <p className="text-xs text-muted mt-0.5">
-                    Rango saludable: {wb.idealMin}–{wb.idealMax} kg para tu talla
+                    {t('profile.bmiHealthyRange', { min: wb.idealMin, max: wb.idealMax })}
                   </p>
                 )}
               </div>
@@ -166,10 +168,10 @@ export default function ProfilePage() {
               </div>
               <div className="flex justify-between text-[9px] text-muted mt-0.5 px-0.5">
                 <span></span>
-                <span className="text-[#38bdf8]">Bajo</span>
-                <span className="text-[#4ade80]">Normal</span>
-                <span className="text-[#facc15]">Sobre</span>
-                <span className="text-[#fb923c]">Ob.I</span>
+                <span className="text-[#38bdf8]">{t('profile.bmiLow')}</span>
+                <span className="text-[#4ade80]">{t('profile.bmiNormal')}</span>
+                <span className="text-[#facc15]">{t('profile.bmiOver')}</span>
+                <span className="text-[#fb923c]">{t('profile.bmiOb1')}</span>
                 <span></span>
               </div>
             </div>
@@ -186,13 +188,13 @@ export default function ProfilePage() {
                   {WEIGHT_GOAL_LABEL[weightGoal]}
                 </span>
                 {weightGoal === 'lose' && wb.direction === 'ok' && (
-                  <span className="text-xs text-green-400 ml-auto">✓ Ya en rango</span>
+                  <span className="text-xs text-green-400 ml-auto">✓ {t('profile.alreadyInRange')}</span>
                 )}
                 {weightGoal === 'lose' && wb.distanceKg > 0 && (
-                  <span className="text-xs text-muted ml-auto">−{wb.distanceKg} kg al objetivo</span>
+                  <span className="text-xs text-muted ml-auto">{t('profile.toGoalNeg', { kg: wb.distanceKg })}</span>
                 )}
                 {weightGoal === 'gain' && wb.distanceKg > 0 && (
-                  <span className="text-xs text-muted ml-auto">+{wb.distanceKg} kg al objetivo</span>
+                  <span className="text-xs text-muted ml-auto">{t('profile.toGoalPos', { kg: wb.distanceKg })}</span>
                 )}
               </div>
             )}
@@ -200,14 +202,14 @@ export default function ProfilePage() {
             {/* Athlete caveat */}
             {wb.athleteCaveat && (
               <p className="text-[10px] text-muted border-t border-border pt-3">
-                ⚠ Para deportistas con alta masa muscular, el IMC puede sobreestimar el porcentaje de grasa. Considera mediciones de composición corporal.
+                {t('profile.bmiAthleteNote')}
               </p>
             )}
 
             {/* Population context */}
             {!wb.athleteCaveat && (
               <p className="text-[10px] text-muted border-t border-border pt-3">
-                Clasificación según la Organización Mundial de la Salud (OMS). Úsala como referencia, no como diagnóstico.
+                {t('profile.bmiRef')}
               </p>
             )}
           </div>
@@ -219,8 +221,8 @@ export default function ProfilePage() {
             <div className="flex items-center gap-3">
               <Scale size={16} className="text-muted" />
               <div>
-                <p className="text-sm text-secondary font-medium">Añade talla y peso</p>
-                <p className="text-xs text-muted">Para ver tu IMC y rango de peso saludable.</p>
+                <p className="text-sm text-secondary font-medium">{t('profile.bmiAddData')}</p>
+                <p className="text-xs text-muted">{t('profile.bmiAddDataDesc')}</p>
               </div>
             </div>
           </div>
@@ -234,7 +236,7 @@ export default function ProfilePage() {
           <>
             <div className="mt-2 mb-1">
               <p className="text-xs font-semibold text-secondary uppercase tracking-widest">
-                Forma física
+                {t('profile.fitnessSection')}
               </p>
             </div>
             <VO2maxCard
@@ -257,8 +259,8 @@ export default function ProfilePage() {
             <div className="flex items-center gap-3">
               <User size={16} className="text-muted" />
               <div>
-                <p className="text-sm text-secondary font-medium">VO2max y zonas</p>
-                <p className="text-xs text-muted">Disponibles tras la primera carga de datos desde el Dashboard.</p>
+                <p className="text-sm text-secondary font-medium">{t('profile.vo2maxSection')}</p>
+                <p className="text-xs text-muted">{t('profile.vo2maxNote')}</p>
               </div>
             </div>
           </div>
@@ -270,12 +272,12 @@ export default function ProfilePage() {
         {/* Form */}
         <div className="card">
           <h2 className="text-xs font-semibold text-secondary uppercase tracking-widest mb-4">
-            {profile ? 'Actualizar perfil' : 'Crear perfil'}
+            {profile ? t('profile.update') : t('profile.create')}
           </h2>
           <ProfileForm
             initial={profile ?? undefined}
             onSave={handleSave}
-            ctaLabel={profile ? 'Actualizar perfil' : 'Guardar perfil'}
+            ctaLabel={profile ? t('profile.update') : t('profile.save')}
           />
         </div>
 
@@ -286,7 +288,7 @@ export default function ProfilePage() {
             className="flex items-center gap-2 text-xs text-muted hover:text-recovery-red transition-colors mx-auto py-2"
           >
             <Trash2 size={13} />
-            Eliminar perfil
+            {t('profile.delete')}
           </button>
         )}
       </main>

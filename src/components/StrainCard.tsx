@@ -3,6 +3,7 @@
 import { Flame, Timer, Heart } from 'lucide-react';
 import type { ActivityData } from '@/lib/types';
 import { getStrainColor, formatDuration } from '@/lib/scoring';
+import { useLang } from '@/lib/i18n';
 
 const ACTIVITY_ICONS: Record<string, string> = {
   running: '🏃',
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export default function StrainCard({ activities, todayStrain, steps = 0, floorsAscended = 0, highlyActiveSeconds = 0, bodyBatteryDrained = 0 }: Props) {
+  const { t } = useLang();
   const highlyActiveMin = Math.round(highlyActiveSeconds / 60);
   const strainColor = getStrainColor(todayStrain);
 
@@ -31,7 +33,7 @@ export default function StrainCard({ activities, todayStrain, steps = 0, floorsA
     <div className="card">
       <div className="card-header">
         <Flame size={14} className="text-strain" />
-        <span>Esfuerzo de Hoy</span>
+        <span>{t('strain.titleToday')}</span>
         <div className="ml-auto flex items-end gap-1">
           <span className="text-2xl font-black leading-none" style={{ color: strainColor }}>
             {todayStrain.toFixed(1)}
@@ -54,36 +56,36 @@ export default function StrainCard({ activities, todayStrain, steps = 0, floorsA
 
       {/* Zone labels */}
       <div className="flex justify-between text-[9px] text-muted uppercase tracking-widest mb-4">
-        <span>Recuperación</span>
-        <span>Moderado</span>
-        <span>Alto</span>
-        <span>Extremo</span>
+        <span>{t('common.low')}</span>
+        <span>{t('common.moderate')}</span>
+        <span>{t('common.high')}</span>
+        <span>{t('strain.extreme')}</span>
       </div>
 
       {/* Activities */}
       {activities.length === 0 ? (
         <div className="py-2 text-center">
-          <p className="text-xs text-secondary">Sin actividades registradas hoy</p>
+          <p className="text-xs text-secondary">{t('strain.noActivities')}</p>
           {todayStrain > 0 && (
             <div className="flex flex-wrap justify-center gap-2 mt-2">
               {steps > 0 && (
                 <span className="text-[11px] text-muted bg-bg px-2 py-0.5 rounded-full">
-                  🚶 {steps.toLocaleString('es')} pasos
+                  {t('strain.steps', { steps: steps.toLocaleString() })}
                 </span>
               )}
               {highlyActiveMin > 5 && (
                 <span className="text-[11px] text-muted bg-bg px-2 py-0.5 rounded-full">
-                  ⚡ {highlyActiveMin} min vigoroso
+                  {t('strain.activeMin', { min: highlyActiveMin })}
                 </span>
               )}
               {floorsAscended > 3 && (
                 <span className="text-[11px] text-muted bg-bg px-2 py-0.5 rounded-full">
-                  🏢 {floorsAscended} pisos
+                  {t('strain.floors', { floors: floorsAscended })}
                 </span>
               )}
               {bodyBatteryDrained > 10 && (
                 <span className="text-[11px] text-muted bg-bg px-2 py-0.5 rounded-full">
-                  🔋 -{bodyBatteryDrained} batería
+                  {t('strain.batteryDrained', { drained: bodyBatteryDrained })}
                 </span>
               )}
             </div>
@@ -95,22 +97,22 @@ export default function StrainCard({ activities, todayStrain, steps = 0, floorsA
             <div className="flex flex-wrap gap-1.5 mb-1">
               {steps > 0 && (
                 <span className="text-[10px] text-muted bg-bg px-2 py-0.5 rounded-full">
-                  🚶 {steps.toLocaleString('es')} pasos
+                  {t('strain.steps', { steps: steps.toLocaleString() })}
                 </span>
               )}
               {highlyActiveMin > 10 && (
                 <span className="text-[10px] text-muted bg-bg px-2 py-0.5 rounded-full">
-                  ⚡ {highlyActiveMin} min vigoroso
+                  {t('strain.activeMin', { min: highlyActiveMin })}
                 </span>
               )}
               {floorsAscended > 3 && (
                 <span className="text-[10px] text-muted bg-bg px-2 py-0.5 rounded-full">
-                  🏢 {floorsAscended} pisos
+                  {t('strain.floors', { floors: floorsAscended })}
                 </span>
               )}
               {bodyBatteryDrained > 10 && (
                 <span className="text-[10px] text-muted bg-bg px-2 py-0.5 rounded-full">
-                  🔋 -{bodyBatteryDrained} batería
+                  {t('strain.batteryDrained', { drained: bodyBatteryDrained })}
                 </span>
               )}
             </div>
@@ -148,7 +150,7 @@ export default function StrainCard({ activities, todayStrain, steps = 0, floorsA
                 >
                   {act.strain.toFixed(1)}
                 </span>
-                <span className="text-[10px] text-muted">esfuerzo</span>
+                <span className="text-[10px] text-muted">{t('strain.strainLabel')}</span>
               </div>
             </div>
           ))}

@@ -8,8 +8,10 @@ import type { DailyMetrics } from '@/lib/types';
 import SleepCard from '@/components/SleepCard';
 import BottomNav from '@/components/BottomNav';
 import { calculateSleepEfficiency, calculateSleepDebt } from '@/lib/scoring';
+import { useLang } from '@/lib/i18n';
 
 export default function SleepPage() {
+  const { t } = useLang();
   const [data, setData] = useState<DailyMetrics | null>(null);
 
   useEffect(() => {
@@ -28,7 +30,7 @@ export default function SleepPage() {
               <ArrowLeft size={18} />
             </Link>
             <Moon size={16} className="text-sleep" />
-            <h1 className="text-sm font-bold text-primary">Sueño</h1>
+            <h1 className="text-sm font-bold text-primary">{t('sleep.title')}</h1>
           </div>
         </header>
         <main className="max-w-md mx-auto px-4 pb-28 pt-4 flex flex-col gap-4">
@@ -65,7 +67,7 @@ export default function SleepPage() {
             <ArrowLeft size={18} />
           </Link>
           <Moon size={16} className="text-sleep" />
-          <h1 className="text-sm font-bold text-primary">Sueño</h1>
+          <h1 className="text-sm font-bold text-primary">{t('sleep.title')}</h1>
         </div>
       </header>
 
@@ -77,25 +79,25 @@ export default function SleepPage() {
         <div className="grid grid-cols-3 gap-3">
           {/* Efficiency */}
           <div className="card text-center">
-            <p className="text-xs text-secondary mb-1">Eficiencia</p>
+            <p className="text-xs text-secondary mb-1">{t('sleep.efficiency')}</p>
             <p className={`text-2xl font-bold ${efficiency >= 85 ? 'text-green-400' : efficiency >= 75 ? 'text-yellow-400' : 'text-red-400'}`}>
               {efficiency}%
             </p>
-            <p className="text-xs text-muted mt-0.5">en cama</p>
+            <p className="text-xs text-muted mt-0.5">{t('sleep.inBed')}</p>
           </div>
 
           {/* 7-day average */}
           <div className="card text-center">
-            <p className="text-xs text-secondary mb-1">Promedio 7d</p>
+            <p className="text-xs text-secondary mb-1">{t('common.avg7d')}</p>
             <p className="text-2xl font-bold text-sleep">
               {avgHours.toFixed(1)}<span className="text-sm font-normal text-secondary ml-0.5">h</span>
             </p>
-            <p className="text-xs text-muted mt-0.5">por noche</p>
+            <p className="text-xs text-muted mt-0.5">{t('sleep.perNight')}</p>
           </div>
 
           {/* Sleep debt */}
           <div className="card text-center">
-            <p className="text-xs text-secondary mb-1">Deuda</p>
+            <p className="text-xs text-secondary mb-1">{t('sleep.debt')}</p>
             <div className="flex items-center justify-center gap-1">
               {debt > 0.5
                 ? <TrendingDown size={14} className="text-red-400" />
@@ -106,7 +108,7 @@ export default function SleepPage() {
                 {Math.abs(debt).toFixed(1)}<span className="text-sm font-normal text-secondary ml-0.5">h</span>
               </p>
             </div>
-            <p className="text-xs text-muted mt-0.5">{debt > 0 ? 'déficit' : debt < 0 ? 'superávit' : 'equilibrado'}</p>
+            <p className="text-xs text-muted mt-0.5">{debt > 0 ? t('sleep.deficit') : debt < 0 ? t('sleep.surplus') : t('sleep.balanced')}</p>
           </div>
         </div>
 
@@ -114,8 +116,8 @@ export default function SleepPage() {
         <div className="card">
           <div className="card-header mb-4">
             <Moon size={14} className="text-sleep" />
-            <span>Horas de sueño — 7 días</span>
-            <span className="ml-auto text-xs text-muted">meta: {TARGET_HOURS}h</span>
+            <span>{t('sleep.chartTitle')}</span>
+            <span className="ml-auto text-xs text-muted">{t('sleep.goalLine', { target: TARGET_HOURS })}</span>
           </div>
 
           {/* Bar chart */}
@@ -151,8 +153,8 @@ export default function SleepPage() {
         <div className="card">
           <div className="card-header mb-4">
             <TrendingDown size={14} className="text-secondary" />
-            <span>Déficit por noche</span>
-            <span className="ml-auto text-xs text-muted">vs {TARGET_HOURS}h objetivo</span>
+            <span>{t('sleep.deficitPerNight')}</span>
+            <span className="ml-auto text-xs text-muted">{t('sleep.vsGoal', { target: TARGET_HOURS })}</span>
           </div>
 
           <div className="flex items-center justify-between gap-1.5 h-24 relative">

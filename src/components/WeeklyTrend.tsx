@@ -4,36 +4,38 @@ import { TrendingUp } from 'lucide-react';
 import type { WeeklyTrend as WeeklyTrendType } from '@/lib/types';
 import { getCategoryColor } from '@/lib/scoring';
 import TrendSparkline from './ui/TrendSparkline';
+import { useLang } from '@/lib/i18n';
 
 interface Props {
   trend: WeeklyTrendType;
 }
 
 export default function WeeklyTrend({ trend }: Props) {
+  const { t } = useLang();
   const avg = (arr: number[]) =>
     arr.length ? Math.round(arr.reduce((s, v) => s + v, 0) / arr.length) : 0;
 
   const rows = [
     {
-      label: 'Recuperación',
+      label: t('weeklyTrend.recovery'),
       data: trend.recovery,
       color: getCategoryColor(avg(trend.recovery)),
       unit: '%',
     },
     {
-      label: 'HRV',
+      label: t('weeklyTrend.hrv'),
       data: trend.hrv,
       color: '#c084fc',
       unit: 'ms',
     },
     {
-      label: 'Sueño',
+      label: t('weeklyTrend.sleep'),
       data: trend.sleep,
       color: '#818cf8',
       unit: '%',
     },
     {
-      label: 'FC Reposo',
+      label: t('weeklyTrend.rhr'),
       data: trend.rhr,
       color: '#38bdf8',
       unit: 'bpm',
@@ -44,7 +46,7 @@ export default function WeeklyTrend({ trend }: Props) {
     <div className="card">
       <div className="card-header mb-4">
         <TrendingUp size={14} className="text-secondary" />
-        <span>Tendencias — 7 días</span>
+        <span>{t('weeklyTrend.title')}</span>
       </div>
 
       <div className="flex flex-col gap-5">

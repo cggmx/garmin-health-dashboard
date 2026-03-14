@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { es as dateFnsEs } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { RefreshCw, WifiOff, Gauge, User } from 'lucide-react';
+import { useLang } from '@/lib/i18n';
 import Link from 'next/link';
 import type { DailyMetrics } from '@/lib/types';
 import { checkAndNotifyBattery } from '@/lib/notifications';
@@ -38,11 +40,15 @@ export default function Dashboard() {
   const { profile, saveProfile, loaded: profileLoaded } = useProfile();
   const showSetup = profileLoaded && !profile;
 
+  const { t, locale, setLocale } = useLang();
+
   // Date string must be client-only to avoid server/client hydration mismatch
   const [dateStr, setDateStr] = useState('');
   useEffect(() => {
-    setDateStr(format(new Date(), "EEEE, d 'de' MMMM", { locale: es }));
-  }, []);
+    const dateLocale = locale === 'es' ? dateFnsEs : enUS;
+    const fmt = locale === 'es' ? "EEEE, d 'de' MMMM" : 'EEEE, MMMM d';
+    setDateStr(format(new Date(), fmt, { locale: dateLocale }));
+  }, [locale]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -82,7 +88,7 @@ export default function Dashboard() {
   }, [fetchData]);
 
   const todayStrain = data?.strain ?? 0;
-  const greeting = profile?.name ? `Hola, ${profile.name}` : 'Garmin Health';
+  const greeting = profile?.name ? t('dashboard.hello', { name: profile.name }) : t('dashboard.title');
 
   // Compute age/sex/fitness benchmarks whenever we have both profile and data
   const benchmarks: ProfileBenchmarks | null =
@@ -118,7 +124,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               {data?.isDemo && (
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-yellow-400/10 text-yellow-400 border border-yellow-400/20">
-                  Demo
+                  {t('common.demo')}
                 </span>
               )}
               {lastSync && (
@@ -126,6 +132,13 @@ export default function Dashboard() {
                   {format(lastSync, 'HH:mm')}
                 </span>
               )}
+              {/* Language toggle */}
+              <button
+                onClick={() => setLocale(locale === 'es' ? 'en' : 'es')}
+                className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-surface border border-border text-secondary hover:text-primary transition-colors"
+              >
+                {t('dashboard.langToggle')}
+              </button>
               <button
                 onClick={fetchData}
                 disabled={loading}
@@ -159,14 +172,14 @@ export default function Dashboard() {
             <div className="card flex items-center gap-3 mb-4 border-red-400/20">
               <WifiOff size={16} className="text-recovery-red flex-shrink-0" />
               <div>
-                <p className="text-xs font-semibold text-recovery-red">Error al conectar</p>
+                <p className="text-xs font-semibold text-recovery-red">{t('dashboard.error')}</p>
                 <p className="text-xs text-secondary">{error}</p>
               </div>
               <button
                 onClick={fetchData}
                 className="ml-auto text-xs text-primary underline"
               >
-                Reintentar
+                {t('common.retry')}
               </button>
             </div>
           )}
@@ -220,13 +233,9 @@ export default function Dashboard() {
               {/* Footer info */}
               <div className="text-center text-[10px] text-muted py-2">
                 {data.isDemo ? (
-                  <span>
-                    Datos demo · Configura credenciales para datos reales
-                  </span>
+                  <span>{t('dashboard.demoBadge')}</span>
                 ) : (
-                  <span>
-                    Datos de Garmin Connect · {data.date}
-                  </span>
+                  <span>{t('dashboard.dataDate', { date: data.date })}</span>
                 )}
               </div>
             </div>

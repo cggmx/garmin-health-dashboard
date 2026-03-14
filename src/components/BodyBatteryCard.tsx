@@ -3,6 +3,7 @@
 import { BatteryMedium, TrendingUp, TrendingDown, BatteryWarning } from 'lucide-react';
 import type { BodyBatteryData } from '@/lib/types';
 import { ResponsiveContainer, AreaChart, Area, Tooltip } from 'recharts';
+import { useLang } from '@/lib/i18n';
 
 interface Props {
   bodyBattery: BodyBatteryData;
@@ -15,19 +16,21 @@ function batteryColor(value: number) {
 }
 
 export default function BodyBatteryCard({ bodyBattery }: Props) {
+  const { t } = useLang();
+
   // ── Device doesn't support Body Battery ────────────────────────────────────
   if (!bodyBattery.isAvailable) {
     return (
       <div className="card">
         <div className="card-header">
           <BatteryMedium size={14} className="text-battery" />
-          <span>Body Battery</span>
+          <span>{t('bodyBattery.title')}</span>
         </div>
         <div className="flex flex-col items-center justify-center gap-2 py-6 text-center">
           <BatteryWarning size={32} className="text-muted" />
-          <p className="text-xs text-secondary font-medium">No disponible</p>
+          <p className="text-xs text-secondary font-medium">{t('bodyBattery.unavailable')}</p>
           <p className="text-[10px] text-muted max-w-[180px]">
-            Tu dispositivo Garmin no es compatible con Body Battery
+            {t('bodyBattery.unavailableDesc')}
           </p>
         </div>
       </div>
@@ -41,7 +44,7 @@ export default function BodyBatteryCard({ bodyBattery }: Props) {
     <div className="card">
       <div className="card-header">
         <BatteryMedium size={14} className="text-battery" />
-        <span>Body Battery</span>
+        <span>{t('bodyBattery.title')}</span>
         <span
           className="ml-auto text-2xl font-black leading-none"
           style={{ color }}
@@ -66,12 +69,12 @@ export default function BodyBatteryCard({ bodyBattery }: Props) {
       <div className="flex gap-4 mb-4">
         <div className="flex items-center gap-1.5">
           <TrendingUp size={13} className="text-recovery-green" />
-          <span className="text-xs text-secondary">Cargado:</span>
+          <span className="text-xs text-secondary">{t('bodyBattery.charged')}</span>
           <span className="text-xs font-bold text-recovery-green">{bodyBattery.charged}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <TrendingDown size={13} className="text-recovery-red" />
-          <span className="text-xs text-secondary">Consumido:</span>
+          <span className="text-xs text-secondary">{t('bodyBattery.drained')}</span>
           <span className="text-xs font-bold text-recovery-red">{bodyBattery.drained}</span>
         </div>
       </div>
@@ -110,7 +113,7 @@ export default function BodyBatteryCard({ bodyBattery }: Props) {
 
       {/* Sync note */}
       <p className="text-[9px] text-muted mt-2 leading-snug">
-        Datos de la última sincronización del reloj. Se actualiza cada ~15 min en la app.
+        {t('bodyBattery.syncNote')}
       </p>
     </div>
   );

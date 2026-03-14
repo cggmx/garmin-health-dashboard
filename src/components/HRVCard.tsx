@@ -6,12 +6,7 @@ import type { HRVData } from '@/lib/types';
 import type { MetricBenchmark } from '@/lib/benchmarks';
 import TrendSparkline from './ui/TrendSparkline';
 import BenchmarkBadge from './ui/BenchmarkBadge';
-
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  balanced: { label: 'Equilibrado', color: '#4ade80' },
-  unbalanced: { label: 'Desequilibrado', color: '#facc15' },
-  poor: { label: 'Bajo', color: '#f87171' },
-};
+import { useLang } from '@/lib/i18n';
 
 interface Props {
   hrv: HRVData;
@@ -20,6 +15,14 @@ interface Props {
 }
 
 export default function HRVCard({ hrv, benchmark }: Props) {
+  const { t } = useLang();
+
+  const STATUS_LABELS: Record<string, { label: string; color: string }> = {
+    balanced: { label: t('hrv.states.balanced'), color: '#4ade80' },
+    unbalanced: { label: t('hrv.states.unbalanced'), color: '#facc15' },
+    poor: { label: t('hrv.states.low'), color: '#f87171' },
+  };
+
   const statusInfo = STATUS_LABELS[hrv.status] ?? STATUS_LABELS.balanced;
   const trend7 = hrv.trend.length > 0 ? hrv.trend : [0];
   const positives = trend7.filter(v => v > 0);
@@ -31,7 +34,7 @@ export default function HRVCard({ hrv, benchmark }: Props) {
     <div className="card">
       <div className="card-header">
         <Activity size={14} className="text-hrv" />
-        <span>Variabilidad Cardíaca</span>
+        <span>{t('hrv.title')}</span>
       </div>
 
       {/* Main value */}
@@ -39,7 +42,7 @@ export default function HRVCard({ hrv, benchmark }: Props) {
         <span className="text-4xl font-black text-primary leading-none" style={{ color: '#c084fc' }}>
           {hrv.lastNight}
         </span>
-        <span className="text-sm text-secondary mb-1">ms anoche</span>
+        <span className="text-sm text-secondary mb-1">{t('hrv.msLastNight')}</span>
         <span
           className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full mb-1"
           style={{ backgroundColor: `${statusInfo.color}22`, color: statusInfo.color }}
@@ -50,14 +53,14 @@ export default function HRVCard({ hrv, benchmark }: Props) {
 
       {/* Baseline context */}
       <p className="text-xs text-secondary mb-3">
-        Media 7 días:{' '}
+        {t('hrv.avg7d')}{' '}
         <span className="text-primary font-semibold">{avg7} ms</span>
         {hrv.lastNight > avg7 ? (
-          <span className="text-recovery-green ml-1">↑ Por encima de tu línea base</span>
+          <span className="text-recovery-green ml-1">{t('hrv.aboveBaseline')}</span>
         ) : hrv.lastNight < avg7 ? (
-          <span className="text-recovery-red ml-1">↓ Por debajo de tu línea base</span>
+          <span className="text-recovery-red ml-1">{t('hrv.belowBaseline')}</span>
         ) : (
-          <span className="text-secondary ml-1">= En tu línea base</span>
+          <span className="text-secondary ml-1">{t('hrv.atBaseline')}</span>
         )}
       </p>
 
@@ -71,8 +74,8 @@ export default function HRVCard({ hrv, benchmark }: Props) {
 
       {/* Min / Max */}
       <div className="flex justify-between mt-2 text-xs text-secondary">
-        <span>Mín 7d: <span className="text-primary">{min7} ms</span></span>
-        <span>Máx 7d: <span className="text-primary">{max7} ms</span></span>
+        <span>{t('hrv.min7d')} <span className="text-primary">{min7} ms</span></span>
+        <span>{t('hrv.max7d')} <span className="text-primary">{max7} ms</span></span>
       </div>
 
       {/* Demographic benchmark — only shown when profile is set */}
@@ -84,7 +87,7 @@ export default function HRVCard({ hrv, benchmark }: Props) {
         className="flex items-center gap-1 text-xs text-muted hover:text-primary transition-colors mt-3 pt-3 border-t border-border"
       >
         <Activity size={11} />
-        Ver detalle de VFC
+        {t('hrv.detailLink')}
         <ChevronRight size={11} className="ml-auto" />
       </Link>
     </div>

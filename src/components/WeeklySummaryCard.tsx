@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
 import type { WeeklyTrend } from '@/lib/types';
 import type { UserProfile } from '@/lib/types';
+import { useLang } from '@/lib/i18n';
 
 interface Props {
   trend: WeeklyTrend;
@@ -33,6 +34,7 @@ function setCache(text: string): void {
 type Status = 'idle' | 'loading' | 'done' | 'error' | 'no_key';
 
 export default function WeeklySummaryCard({ trend, profile }: Props) {
+  const { t } = useLang();
   const [summary, setSummary] = useState<string>('');
   const [status, setStatus] = useState<Status>('idle');
 
@@ -98,8 +100,8 @@ export default function WeeklySummaryCard({ trend, profile }: Props) {
       <div className="card">
         <div className="card-header mb-4">
           <Sparkles size={14} className="text-purple-400" />
-          <span className="text-purple-400">Análisis semanal</span>
-          <span className="ml-auto text-[10px] text-muted">IA · Claude</span>
+          <span className="text-purple-400">{t('weeklySummary.title')}</span>
+          <span className="ml-auto text-[10px] text-muted">{t('weeklySummary.badge')}</span>
         </div>
         <div className="flex flex-col gap-2">
           {[100, 90, 75].map((w, i) => (
@@ -111,7 +113,7 @@ export default function WeeklySummaryCard({ trend, profile }: Props) {
           ))}
         </div>
         <p className="text-[10px] text-muted mt-3 text-center animate-pulse">
-          Generando análisis personalizado…
+          {t('weeklySummary.generating')}
         </p>
       </div>
     );
@@ -124,14 +126,14 @@ export default function WeeklySummaryCard({ trend, profile }: Props) {
         <div className="flex items-center gap-3">
           <AlertCircle size={16} className="text-muted flex-shrink-0" />
           <div className="flex-1">
-            <p className="text-xs text-secondary font-medium">Análisis IA no disponible</p>
-            <p className="text-[10px] text-muted mt-0.5">Error al contactar con el servicio.</p>
+            <p className="text-xs text-secondary font-medium">{t('weeklySummary.errorTitle')}</p>
+            <p className="text-[10px] text-muted mt-0.5">{t('weeklySummary.errorDesc')}</p>
           </div>
           <button
             onClick={() => generate(true)}
             className="text-[10px] text-secondary hover:text-primary transition-colors underline"
           >
-            Reintentar
+            {t('weeklySummary.retry')}
           </button>
         </div>
       </div>
@@ -147,9 +149,9 @@ export default function WeeklySummaryCard({ trend, profile }: Props) {
       {/* Header */}
       <div className="card-header mb-3">
         <Sparkles size={14} className="text-purple-400" />
-        <span className="text-purple-400">Análisis semanal</span>
+        <span className="text-purple-400">{t('weeklySummary.title')}</span>
         <span className="ml-auto flex items-center gap-2">
-          <span className="text-[10px] text-muted">IA · Claude</span>
+          <span className="text-[10px] text-muted">{t('weeklySummary.badge')}</span>
           <button
             onClick={() => generate(true)}
             title="Regenerar análisis"
@@ -166,7 +168,7 @@ export default function WeeklySummaryCard({ trend, profile }: Props) {
       </p>
 
       <p className="text-[9px] text-muted mt-3 text-right">
-        Actualizado hoy · Datos de los últimos 7 días
+        {t('weeklySummary.footer')}
       </p>
     </div>
   );

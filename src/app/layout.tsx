@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import InstallPrompt from '@/components/InstallPrompt';
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
+import { LangProvider } from '@/lib/i18n';
 
 export const metadata: Metadata = {
   title: 'Garmin Health',
@@ -26,9 +27,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className="dark">
       <body className="bg-bg min-h-screen">
-        {children}
-        <InstallPrompt />
-        <ServiceWorkerRegistrar />
+        <LangProvider>
+          {children}
+          <InstallPrompt />
+          <ServiceWorkerRegistrar />
+        </LangProvider>
       </body>
     </html>
   );

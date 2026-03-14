@@ -10,6 +10,7 @@ import type { ProfileBenchmarks } from '@/lib/benchmarks';
 import { format } from 'date-fns';
 import { useInsightsHistory, analyzePatterns } from '@/lib/useInsightsHistory';
 import type { InsightHistoryEntry } from '@/lib/useInsightsHistory';
+import { useLang } from '@/lib/i18n';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -42,9 +43,12 @@ const SEVERITY: Record<InsightType, number> = { danger: 0, warning: 1, success: 
 
 // ── Rule engine ───────────────────────────────────────────────────────────────
 
+type TFunc = (key: string, params?: Record<string, string | number>) => string;
+
 function buildInsights(
   data: DailyMetrics,
   profile: UserProfile | null,
+  t: TFunc,
 ): Insight[] {
   const pool: Insight[] = [];
   const sleepHours = Math.round((data.sleep.totalSleepSeconds / 3600) * 10) / 10;
@@ -56,26 +60,26 @@ function buildInsights(
       id: 'recovery',
       Icon: CheckCircle,
       type: 'success',
-      text: `Buena recuperación — ${data.recovery.score}%`,
+      text: t('insights.msgs.goodRecovery', { score: data.recovery.score }),
       subtext: profile?.goal === 'performance'
-        ? 'Condiciones óptimas para un entrenamiento de calidad o alta intensidad.'
-        : 'Estás en buenas condiciones. Aprovecha el día.',
+        ? t('insights.msgs.goodRecoveryDesc')
+        : t('insights.msgs.goodRecoveryDesc2'),
     });
   } else if (data.recovery.score >= 34) {
     pool.push({
       id: 'recovery',
       Icon: AlertTriangle,
       type: 'warning',
-      text: `Recuperación moderada — ${data.recovery.score}%`,
-      subtext: 'Opta por actividad ligera o técnica. Evita el esfuerzo máximo hoy.',
+      text: t('insights.msgs.modRecovery', { score: data.recovery.score }),
+      subtext: t('insights.msgs.modRecoveryDesc'),
     });
   } else {
     pool.push({
       id: 'recovery',
       Icon: AlertTriangle,
       type: 'danger',
-      text: `Recuperación baja — ${data.recovery.score}%`,
-      subtext: 'Prioriza el descanso: sueño, hidratación y actividad mínima.',
+      text: t('insights.msgs.lowRecovery', { score: data.recovery.score }),
+      subtext: t('insights.msgs.lowRecoveryDesc'),
     });
   }
 
@@ -88,8 +92,8 @@ function buildInsights(
         id: 'hrv_low',
         Icon: TrendingDown,
         type: 'warning',
-        text: `VFC anoche ${data.hrv.lastNight} ms — ${drop}% por debajo de tu media`,
-        subtext: 'El sistema nervioso autónomo muestra estrés. Reduce la intensidad de entrenamiento.',
+        text: t('insights.msgs.hrvDrop', { hrv: data.hrv.lastNight, drop }),
+        subtext: t('insights.msgs.hrvDropDesc'),
       });
     } else if (ratio > 1.10) {
       const rise = Math.round((ratio - 1) * 100);
@@ -97,8 +101,8 @@ function buildInsights(
         id: 'hrv_high',
         Icon: TrendingUp,
         type: 'success',
-        text: `VFC en alza — ${data.hrv.lastNight} ms (+${rise}% vs tu media)`,
-        subtext: 'Señal positiva de adaptación. Tu sistema nervioso está bien recuperado.',
+        text: t('insights.msgs.hrvRise', { hrv: data.hrv.lastNight, rise }),
+        subtext: t('insights.msgs.hrvRiseDesc'),
       });
     }
   }
@@ -109,16 +113,16 @@ function buildInsights(
       id: 'sleep_low',
       Icon: Moon,
       type: 'danger',
-      text: `Solo ${sleepHours}h de sueño anoche`,
-      subtext: 'Déficit severo. Afecta la recuperación muscular, el cortisol y el rendimiento cognitivo.',
+      text: t('insights.msgs.sleepSevere', { hours: sleepHours }),
+      subtext: t('insights.msgs.sleepSevereDesc'),
     });
   } else if (sleepHours < 6.5) {
     pool.push({
       id: 'sleep_short',
       Icon: Moon,
       type: 'warning',
-      text: `Sueño corto — ${sleepHours}h`,
-      subtext: 'Intenta ir a dormir antes esta noche para compensar.',
+      text: t('insights.msgs.sleepShort', { hours: sleepHours }),
+      subtext: t('insights.msgs.sleepShortDesc'),
     });
   }
 
@@ -129,16 +133,16 @@ function buildInsights(
         id: 'battery_critical',
         Icon: Battery,
         type: 'danger',
-        text: `Batería corporal crítica — ${data.bodyBattery.current}%`,
-        subtext: 'Evita el ejercicio intenso hasta recuperar energía.',
+        text: t('insights.msgs.batteryCritical', { battery: data.bodyBattery.current }),
+        subtext: t('insights.msgs.batteryCriticalDesc'),
       });
     } else if (data.bodyBattery.current < 40) {
       pool.push({
         id: 'battery_low',
         Icon: Battery,
         type: 'warning',
-        text: `Batería corporal baja — ${data.bodyBattery.current}%`,
-        subtext: 'Descanso activo o actividad suave recomendada.',
+        text: t('insights.msgs.batteryLow', { battery: data.bodyBattery.current }),
+        subtext: t('insights.msgs.batteryLowDesc'),
       });
     }
   }
@@ -149,16 +153,16 @@ function buildInsights(
       id: 'stress_high',
       Icon: Brain,
       type: 'warning',
-      text: `${data.stress.highStressPercentage}% del día con estrés alto`,
-      subtext: 'Técnicas de respiración o meditación breve pueden ayudar a equilibrar.',
+      text: t('insights.msgs.stressHigh', { pct: data.stress.highStressPercentage }),
+      subtext: t('insights.msgs.stressHighDesc'),
     });
   } else if (data.stress.average > 60 && data.stress.highStressPercentage <= 50) {
     pool.push({
       id: 'stress_avg',
       Icon: Brain,
       type: 'info',
-      text: `Estrés promedio elevado (${data.stress.average}/100)`,
-      subtext: 'Una sesión corta de relajación activa puede acelerar la recuperación.',
+      text: t('insights.msgs.stressAvg', { avg: data.stress.average }),
+      subtext: t('insights.msgs.stressAvgDesc'),
     });
   }
 
@@ -171,8 +175,8 @@ function buildInsights(
         id: 'trend_down',
         Icon: TrendingDown,
         type: 'warning',
-        text: '3 días consecutivos de recuperación bajando',
-        subtext: 'Señal de acumulación de fatiga. Reduce el volumen de entrenamiento esta semana.',
+        text: t('insights.msgs.fatigue'),
+        subtext: t('insights.msgs.fatigueDesc'),
       });
     }
   }
@@ -183,8 +187,8 @@ function buildInsights(
       id: 'steps_goal',
       Icon: Zap,
       type: 'info',
-      text: `${data.steps.toLocaleString('es')} pasos hoy — objetivo incompleto`,
-      subtext: 'Un paseo de 20–30 min contribuye significativamente a tu objetivo de peso.',
+      text: t('insights.msgs.steps', { steps: data.steps.toLocaleString() }),
+      subtext: t('insights.msgs.stepsDesc'),
     });
   }
 
@@ -193,8 +197,8 @@ function buildInsights(
       id: 'perf_ready',
       Icon: Zap,
       type: 'success',
-      text: 'Día ideal para una sesión de alto rendimiento',
-      subtext: 'Tu recuperación soporta trabajo de calidad: fuerza, velocidad o técnica avanzada.',
+      text: t('insights.msgs.perfectDay'),
+      subtext: t('insights.msgs.perfectDayDesc'),
     });
   }
 
@@ -203,8 +207,8 @@ function buildInsights(
       id: 'goal_recovery',
       Icon: Info,
       type: 'info',
-      text: 'Hoy es el día perfecto para tu objetivo de recuperación',
-      subtext: 'Sueño temprano, hidratación, nutrición anti-inflamatoria y sin alcohol.',
+      text: t('insights.msgs.recoveryDay'),
+      subtext: t('insights.msgs.recoveryDayDesc'),
     });
   }
 
@@ -216,7 +220,7 @@ function buildInsights(
 
 // ── History dot timeline ───────────────────────────────────────────────────────
 
-function HistoryTimeline({ entries }: { entries: InsightHistoryEntry[] }) {
+function HistoryTimeline({ entries, t }: { entries: InsightHistoryEntry[]; t: TFunc }) {
   const today = format(new Date(), 'yyyy-MM-dd');
   // build last 14 days slots
   const slots = Array.from({ length: 14 }, (_, i) => {
@@ -230,7 +234,7 @@ function HistoryTimeline({ entries }: { entries: InsightHistoryEntry[] }) {
 
   return (
     <div className="mt-3 pt-3 border-t border-border">
-      <p className="text-[10px] text-muted uppercase tracking-widest mb-2">Últimos 14 días</p>
+      <p className="text-[10px] text-muted uppercase tracking-widest mb-2">{t('insights.recoveryHistory')}</p>
       <div className="flex gap-1 items-end">
         {slots.map(({ dateStr, entry, isToday, dayLabel }) => (
           <div key={dateStr} className="flex-1 flex flex-col items-center gap-1">
@@ -254,11 +258,11 @@ function HistoryTimeline({ entries }: { entries: InsightHistoryEntry[] }) {
         ))}
       </div>
       <div className="flex items-center gap-3 mt-2 flex-wrap">
-        {(['success', 'warning', 'danger'] as InsightType[]).map(t => (
-          <div key={t} className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: DOT_COLOR[t] }} />
+        {(['success', 'warning', 'danger'] as InsightType[]).map(type => (
+          <div key={type} className="flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: DOT_COLOR[type] }} />
             <span className="text-[10px] text-muted">
-              {t === 'success' ? 'Buena' : t === 'warning' ? 'Moderada' : 'Baja'}
+              {type === 'success' ? t('insights.good') : type === 'warning' ? t('insights.moderate') : t('insights.low')}
             </span>
           </div>
         ))}
@@ -276,7 +280,8 @@ interface Props {
 }
 
 export default function InsightsCard({ data, profile }: Props) {
-  const insights = buildInsights(data, profile);
+  const { t } = useLang();
+  const insights = buildInsights(data, profile, t);
   const { entries, saveToday, loaded } = useInsightsHistory();
   const [showHistory, setShowHistory] = useState(false);
 
@@ -303,8 +308,8 @@ export default function InsightsCard({ data, profile }: Props) {
     <div className="card">
       <div className="card-header mb-3">
         <Lightbulb size={14} className="text-secondary" />
-        <span>Insights del día</span>
-        <span className="ml-auto text-[10px] text-muted">{insights.length} recomendaciones</span>
+        <span>{t('insights.title')}</span>
+        <span className="ml-auto text-[10px] text-muted">{t('insights.recommendations', { count: insights.length })}</span>
       </div>
 
       <div className="flex flex-col gap-2">
@@ -349,12 +354,12 @@ export default function InsightsCard({ data, profile }: Props) {
           className="flex items-center gap-1 text-[11px] text-muted hover:text-primary transition-colors mt-3 pt-3 border-t border-border w-full"
         >
           {showHistory ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-          Historial de recuperación
-          <span className="ml-auto text-[10px]">{entries.length} días</span>
+          {t('insights.recoveryHistory')}
+          <span className="ml-auto text-[10px]">{t('insights.days', { count: entries.length })}</span>
         </button>
       )}
 
-      {showHistory && <HistoryTimeline entries={entries} />}
+      {showHistory && <HistoryTimeline entries={entries} t={t} />}
     </div>
   );
 }

@@ -4,17 +4,19 @@ import { LayoutDashboard, Moon, TrendingUp, Flame, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
-
-const NAV_ITEMS = [
-  { href: '/', label: 'Inicio', Icon: LayoutDashboard },
-  { href: '/sleep', label: 'Sueño', Icon: Moon },
-  { href: '/strain', label: 'Esfuerzo', Icon: Flame },
-  { href: '/trends', label: 'Tendencias', Icon: TrendingUp },
-  { href: '/profile', label: 'Perfil', Icon: User },
-];
+import { useLang } from '@/lib/i18n';
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const { t } = useLang();
+
+  const NAV_ITEMS = [
+    { href: '/', label: t('nav.home'), Icon: LayoutDashboard },
+    { href: '/sleep', label: t('nav.sleep'), Icon: Moon },
+    { href: '/strain', label: t('nav.strain'), Icon: Flame },
+    { href: '/trends', label: t('nav.trends'), Icon: TrendingUp },
+    { href: '/profile', label: t('nav.profile'), Icon: User },
+  ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-surface/95 backdrop-blur border-t border-border safe-pb">

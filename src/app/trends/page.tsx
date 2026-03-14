@@ -11,6 +11,7 @@ import TrendSparkline from '@/components/ui/TrendSparkline';
 import WeeklySummaryCard from '@/components/WeeklySummaryCard';
 import { calculateMedian, getCategoryColor } from '@/lib/scoring';
 import { useProfile } from '@/lib/useProfile';
+import { useLang } from '@/lib/i18n';
 
 type Range = 7 | 30 | 90;
 
@@ -198,6 +199,7 @@ interface RowData {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function TrendsPage() {
+  const { t } = useLang();
   const { profile } = useProfile();
   const [data,         setData]         = useState<DailyMetrics | null>(null);
   const [range,        setRange]        = useState<Range>(7);
@@ -225,20 +227,20 @@ export default function TrendsPage() {
     if (range === 7 && data) {
       const avgRec = Math.round(data.weeklyTrend.recovery.reduce((s, v) => s + v, 0) / 7);
       return [
-        { label: 'Recuperación', unit: '%',   color: getCategoryColor(avgRec), series: data.weeklyTrend.recovery,  decimals: 0, higherIsBetter: true  },
-        { label: 'HRV',          unit: 'ms',  color: '#c084fc',                series: data.weeklyTrend.hrv,        decimals: 0, higherIsBetter: true  },
-        { label: 'Horas sueño',  unit: 'h',   color: '#818cf8',                series: data.weeklyTrend.sleepHours, decimals: 1, higherIsBetter: true  },
-        { label: 'FC Reposo',    unit: 'bpm', color: '#38bdf8',                series: data.weeklyTrend.rhr,        decimals: 0, higherIsBetter: false },
-        { label: 'Esfuerzo',     unit: '/21', color: '#fb923c',                series: data.weeklyTrend.strain,     decimals: 1, higherIsBetter: false },
+        { label: t('trends.recovery'), unit: '%',   color: getCategoryColor(avgRec), series: data.weeklyTrend.recovery,  decimals: 0, higherIsBetter: true  },
+        { label: t('trends.hrv'),      unit: 'ms',  color: '#c084fc',                series: data.weeklyTrend.hrv,        decimals: 0, higherIsBetter: true  },
+        { label: t('trends.sleep'),    unit: 'h',   color: '#818cf8',                series: data.weeklyTrend.sleepHours, decimals: 1, higherIsBetter: true  },
+        { label: t('trends.rhr'),      unit: 'bpm', color: '#38bdf8',                series: data.weeklyTrend.rhr,        decimals: 0, higherIsBetter: false },
+        { label: t('trends.strain'),   unit: '/21', color: '#fb923c',                series: data.weeklyTrend.strain,     decimals: 1, higherIsBetter: false },
       ];
     }
     if (trendPoints && trendPoints.length > 0) {
       return [
-        { label: 'Recuperación', unit: '%',   color: '#4ade80', series: trendPoints.map(p => p.recovery),   decimals: 0, higherIsBetter: true  },
-        { label: 'HRV',          unit: 'ms',  color: '#c084fc', series: trendPoints.map(p => p.hrv),        decimals: 0, higherIsBetter: true  },
-        { label: 'Horas sueño',  unit: 'h',   color: '#818cf8', series: trendPoints.map(p => p.sleepHours), decimals: 1, higherIsBetter: true  },
-        { label: 'FC Reposo',    unit: 'bpm', color: '#38bdf8', series: trendPoints.map(p => p.rhr),        decimals: 0, higherIsBetter: false },
-        { label: 'Esfuerzo',     unit: '/21', color: '#fb923c', series: trendPoints.map(p => p.strain),     decimals: 1, higherIsBetter: false },
+        { label: t('trends.recovery'), unit: '%',   color: '#4ade80', series: trendPoints.map(p => p.recovery),   decimals: 0, higherIsBetter: true  },
+        { label: t('trends.hrv'),      unit: 'ms',  color: '#c084fc', series: trendPoints.map(p => p.hrv),        decimals: 0, higherIsBetter: true  },
+        { label: t('trends.sleep'),    unit: 'h',   color: '#818cf8', series: trendPoints.map(p => p.sleepHours), decimals: 1, higherIsBetter: true  },
+        { label: t('trends.rhr'),      unit: 'bpm', color: '#38bdf8', series: trendPoints.map(p => p.rhr),        decimals: 0, higherIsBetter: false },
+        { label: t('trends.strain'),   unit: '/21', color: '#fb923c', series: trendPoints.map(p => p.strain),     decimals: 1, higherIsBetter: false },
       ];
     }
     return [];
@@ -256,7 +258,7 @@ export default function TrendsPage() {
             <ArrowLeft size={18} />
           </Link>
           <TrendingUp size={16} className="text-secondary" />
-          <h1 className="text-sm font-bold text-primary">Tendencias</h1>
+          <h1 className="text-sm font-bold text-primary">{t('trends.title')}</h1>
           {data && (
             <button
               onClick={async () => {
@@ -267,7 +269,7 @@ export default function TrendsPage() {
               className="ml-auto flex items-center gap-1.5 text-xs text-secondary hover:text-primary transition-colors disabled:opacity-50"
             >
               {pdfLoading ? <Loader2 size={13} className="animate-spin" /> : <FileDown size={13} />}
-              PDF
+              {t('trends.pdf')}
             </button>
           )}
         </div>
@@ -310,7 +312,7 @@ export default function TrendsPage() {
             {range > 7 && (
               <div className="flex items-center justify-center gap-2 text-xs text-secondary">
                 <Loader2 size={13} className="animate-spin" />
-                Obteniendo {range} días de Garmin…
+                {t('trends.fetchingData', { range })}
               </div>
             )}
           </div>
@@ -368,17 +370,17 @@ export default function TrendsPage() {
               {/* Min / Max row */}
               <div className="flex gap-3 mb-3">
                 <div className="flex items-center gap-1 text-[10px] text-muted">
-                  <span className="text-secondary">Mín</span>
+                  <span className="text-secondary">{t('trends.min')}</span>
                   <span className="font-semibold text-primary">{minDisplay}{row.unit}</span>
                 </div>
                 <div className="w-px bg-border" />
                 <div className="flex items-center gap-1 text-[10px] text-muted">
-                  <span className="text-secondary">Máx</span>
+                  <span className="text-secondary">{t('trends.max')}</span>
                   <span className="font-semibold text-primary">{maxDisplay}{row.unit}</span>
                 </div>
                 <div className="w-px bg-border" />
                 <div className="flex items-center gap-1 text-[10px] text-muted">
-                  <span className="text-secondary">p50</span>
+                  <span className="text-secondary">{t('trends.p50')}</span>
                   <span className="font-semibold" style={{ color: row.color }}>
                     {row.decimals === 1 ? p50.toFixed(1) : String(p50)}{row.unit}
                   </span>

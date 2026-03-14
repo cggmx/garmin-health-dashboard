@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Brain, ChevronRight } from 'lucide-react';
 import type { StressData } from '@/lib/types';
 import { ResponsiveContainer, AreaChart, Area, Tooltip, ReferenceLine, XAxis } from 'recharts';
+import { useLang } from '@/lib/i18n';
 
 interface Props {
   stress: StressData;
@@ -15,20 +16,21 @@ function stressColor(avg: number) {
   return '#f87171';
 }
 
-function stressLabel(avg: number) {
-  if (avg <= 25) return 'Bajo';
-  if (avg <= 50) return 'Moderado';
-  return 'Alto';
-}
-
 export default function StressCard({ stress }: Props) {
+  const { t } = useLang();
   const color = stressColor(stress.average);
+
+  function stressLabel(avg: number) {
+    if (avg <= 25) return t('stress.levels.low');
+    if (avg <= 50) return t('stress.levels.moderate');
+    return t('stress.levels.high');
+  }
 
   return (
     <div className="card">
       <div className="card-header">
         <Brain size={14} className="text-stress" />
-        <span>Estrés</span>
+        <span>{t('stress.title')}</span>
         <div className="ml-auto flex items-center gap-2">
           <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: `${color}22`, color }}>
             {stressLabel(stress.average)}
@@ -87,17 +89,17 @@ export default function StressCard({ stress }: Props) {
       {/* Stats grid */}
       <div className="grid grid-cols-3 gap-3">
         <StatBox
-          label="En reposo"
+          label={t('stress.levels.atRest')}
           value={`${stress.restingPercentage}%`}
           color="#4ade80"
         />
         <StatBox
-          label="Estrés alto"
+          label={t('stress.levels.highStress')}
           value={`${stress.highStressPercentage}%`}
           color="#f87171"
         />
         <StatBox
-          label="Nivel medio"
+          label={t('stress.levels.avgLevel')}
           value={String(stress.average)}
           color={color}
         />
@@ -108,7 +110,7 @@ export default function StressCard({ stress }: Props) {
         className="flex items-center gap-1 text-xs text-muted hover:text-primary transition-colors mt-3 pt-3 border-t border-border"
       >
         <Brain size={11} />
-        Ver detalle de estrés
+        {t('stress.detailLink')}
         <ChevronRight size={11} className="ml-auto" />
       </Link>
     </div>

@@ -2,6 +2,7 @@
 
 import { Zap } from 'lucide-react';
 import { calculateTrainingZones } from '@/lib/scoring';
+import { useLang } from '@/lib/i18n';
 
 interface Props {
   restingHR: number;
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export default function TrainingZonesCard({ restingHR, age, observedMaxHR, lastActivityAvgHR }: Props) {
+  const { t } = useLang();
   if (!restingHR || restingHR < 30) return null;
 
   const zones = calculateTrainingZones(restingHR, age, observedMaxHR);
@@ -25,8 +27,8 @@ export default function TrainingZonesCard({ restingHR, age, observedMaxHR, lastA
     <div className="card">
       <div className="card-header mb-4">
         <Zap size={14} className="text-secondary" />
-        <span>Zonas de entrenamiento</span>
-        <span className="ml-auto text-[10px] text-muted">Modelo Karvonen · 5 zonas</span>
+        <span>{t('trainingZones.title')}</span>
+        <span className="ml-auto text-[10px] text-muted">{t('trainingZones.model')}</span>
       </div>
 
       <div className="flex flex-col gap-2">
@@ -72,7 +74,7 @@ export default function TrainingZonesCard({ restingHR, age, observedMaxHR, lastA
                   className="text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
                   style={{ color: zone.color, backgroundColor: `${zone.color}22` }}
                 >
-                  HOY
+                  {t('trainingZones.today')}
                 </span>
               )}
             </div>
@@ -81,7 +83,12 @@ export default function TrainingZonesCard({ restingHR, age, observedMaxHR, lastA
       </div>
 
       <p className="text-[10px] text-muted border-t border-border pt-3 mt-3">
-        FC máx: {observedMaxHR && observedMaxHR > 100 ? `${observedMaxHR} bpm (observada)` : `${Math.round(208 - 0.7 * age)} bpm (Tanaka)`} · FC reposo: {restingHR} bpm
+        {t('trainingZones.fcInfo', {
+          maxHR: observedMaxHR && observedMaxHR > 100
+            ? t('trainingZones.fcMaxObserved', { hr: observedMaxHR })
+            : t('trainingZones.fcMaxEstimated', { hr: Math.round(208 - 0.7 * age) }),
+          restHR: restingHR,
+        })}
       </p>
     </div>
   );
