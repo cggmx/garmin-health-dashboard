@@ -22,6 +22,8 @@ const en = {
     optimal: 'Optimal',
     danger: 'Danger',
     balance: 'Balanced',
+    recovered: 'Recovered',
+    fatigued: 'Fatigued',
     units: {
       bpm: 'bpm',
       ms: 'ms',

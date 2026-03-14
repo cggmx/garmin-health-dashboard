@@ -16,7 +16,7 @@ interface Props {
 }
 
 export default function SleepCard({ sleep, benchmark, isDemo }: Props) {
-  const { t } = useLang();
+  const { t, locale } = useLang();
   const totalHours = sleep.totalSleepSeconds / 3600;
 
   const STAGES = [
@@ -123,9 +123,9 @@ export default function SleepCard({ sleep, benchmark, isDemo }: Props) {
           <div className="flex items-center gap-1 ml-auto text-xs text-secondary">
             <Zap size={11} className="text-strain" />
             <span>
-              {new Date(sleep.startTime).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+              {new Date(sleep.startTime).toLocaleTimeString(locale === 'es' ? 'es-ES' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
               {' → '}
-              {new Date(sleep.endTime).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+              {new Date(sleep.endTime).toLocaleTimeString(locale === 'es' ? 'es-ES' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
             </span>
           </div>
         </div>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { format, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import Link from 'next/link';
 import { ArrowLeft, TrendingUp, Loader2, FileDown, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 import type { DailyMetrics, TrendPoint } from '@/lib/types';
@@ -16,7 +17,7 @@ import { useLang } from '@/lib/i18n';
 type Range = 7 | 30 | 90;
 
 // ── PDF export ─────────────────────────────────────────────────────────────────
-async function exportWeeklyPDF(data: DailyMetrics) {
+async function exportWeeklyPDF(data: DailyMetrics, translate: (k: string) => string, locale: string) {
   const { jsPDF } = await import('jspdf');
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
@@ -40,7 +41,7 @@ async function exportWeeklyPDF(data: DailyMetrics) {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(20);
   doc.setTextColor(...PRIM);
-  doc.text('Resumen Semanal', pad, y);
+  doc.text(t('trends.weeklySummary'), pad, y);
   y += 8;
 
   doc.setFont('helvetica', 'normal');
@@ -48,7 +49,7 @@ async function exportWeeklyPDF(data: DailyMetrics) {
   doc.setTextColor(...SEC);
   const today = new Date();
   const from  = new Date(today); from.setDate(today.getDate() - 6);
-  const fmt = (d: Date) => d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+  const fmt = (d: Date) => d.toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'short' });
   doc.text(`${fmt(from)} – ${fmt(today)} · Garmin Health Dashboard`, pad, y);
   y += 2;
 
@@ -104,22 +105,22 @@ async function exportWeeklyPDF(data: DailyMetrics) {
   const cw = col - 2; const ch = 38;
   const ORG: [number, number, number] = [251, 146, 60];
 
-  card(pad,       y, cw, ch, 'Recuperación', String(avgArr(t.recovery)),       '%',    GRN, t.recovery);
-  card(pad + col, y, cw, ch, 'HRV',          String(avgArr(t.hrv)),            'ms',   PRP, t.hrv);
+  card(pad,       y, cw, ch, translate('trends.recovery'), String(avgArr(t.recovery)),       '%',    GRN, t.recovery);
+  card(pad + col, y, cw, ch, translate('trends.hrv'),      String(avgArr(t.hrv)),            'ms',   PRP, t.hrv);
   y += ch + 4;
-  card(pad,       y, cw, ch, 'Sueño',        avgArr(t.sleepHours).toFixed(1),  'h',    IND, t.sleepHours);
-  card(pad + col, y, cw, ch, 'FC Reposo',    String(avgArr(t.rhr)),            'bpm',  SKY, t.rhr);
+  card(pad,       y, cw, ch, translate('trends.sleep'),    avgArr(t.sleepHours).toFixed(1),  'h',    IND, t.sleepHours);
+  card(pad + col, y, cw, ch, translate('trends.rhr'),      String(avgArr(t.rhr)),            'bpm',  SKY, t.rhr);
   y += ch + 4;
-  card(pad, y, W - pad * 2, ch, 'Esfuerzo diario', avgArr(t.strain).toFixed(1), '/ 21', ORG, t.strain);
+  card(pad, y, W - pad * 2, ch, translate('trends.strain'), avgArr(t.strain).toFixed(1), '/ 21', ORG, t.strain);
   y += ch + 10;
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(...PRIM);
-  doc.text('Desglose diario', pad, y);
+  doc.text(translate('trends.dailyBreakdown'), pad, y);
   y += 6;
 
-  const days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+  const days = [translate('trends.days.mon'), translate('trends.days.tue'), translate('trends.days.wed'), translate('trends.days.thu'), translate('trends.days.fri'), translate('trends.days.sat'), translate('trends.days.sun')];
   const colW = (W - pad * 2) / 7;
 
   doc.setFont('helvetica', 'normal');
@@ -129,11 +130,11 @@ async function exportWeeklyPDF(data: DailyMetrics) {
   y += 5;
 
   const rows = [
-    { label: 'Recup %',  data: t.recovery,   color: GRN, fmt: (v: number) => String(Math.round(v)) },
-    { label: 'HRV ms',   data: t.hrv,         color: PRP, fmt: (v: number) => String(Math.round(v)) },
-    { label: 'Sueño h',  data: t.sleepHours,  color: IND, fmt: (v: number) => v.toFixed(1) },
-    { label: 'FCR',      data: t.rhr,         color: SKY, fmt: (v: number) => String(Math.round(v)) },
-    { label: 'Esf.',     data: t.strain,      color: ORG, fmt: (v: number) => v.toFixed(1) },
+    { label: translate('trends.cols.recovery'), data: t.recovery,   color: GRN, fmt: (v: number) => String(Math.round(v)) },
+    { label: translate('trends.cols.hrv'),      data: t.hrv,         color: PRP, fmt: (v: number) => String(Math.round(v)) },
+    { label: translate('trends.cols.sleep'),    data: t.sleepHours,  color: IND, fmt: (v: number) => v.toFixed(1) },
+    { label: translate('trends.cols.rhr'),      data: t.rhr,         color: SKY, fmt: (v: number) => String(Math.round(v)) },
+    { label: translate('trends.cols.strain'),   data: t.strain,      color: ORG, fmt: (v: number) => v.toFixed(1) },
   ];
 
   rows.forEach(row => {
@@ -155,18 +156,20 @@ async function exportWeeklyPDF(data: DailyMetrics) {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   doc.setTextColor(...SEC);
-  doc.text('Garmin Health Dashboard · Datos obtenidos de Garmin Connect', pad, y);
-  doc.text(new Date().toLocaleString('es-ES'), W - pad, y, { align: 'right' });
+  doc.text(translate('trends.pdfFooter'), pad, y);
+  doc.text(new Date().toLocaleString(locale === 'es' ? 'es-ES' : 'en-US'), W - pad, y, { align: 'right' });
 
-  doc.save(`resumen-semanal-${today.toISOString().slice(0, 10)}.pdf`);
+  const fileName = locale === 'es' ? `resumen-semanal-${today.toISOString().slice(0, 10)}.pdf` : `weekly-summary-${today.toISOString().slice(0, 10)}.pdf`;
+  doc.save(fileName);
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function buildDateLabels(days: number): string[] {
+function buildDateLabels(days: number, locale: string): string[] {
   const today = new Date();
+  const dateFnsLocale = locale === 'es' ? es : enUS;
   return Array.from({ length: days }, (_, i) => {
     const d = subDays(today, days - 1 - i);
-    return days === 7 ? format(d, 'EEE', { locale: es }) : format(d, 'd/M');
+    return days === 7 ? format(d, 'EEE', { locale: dateFnsLocale }) : format(d, 'd/M');
   });
 }
 
@@ -199,7 +202,7 @@ interface RowData {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function TrendsPage() {
-  const { t } = useLang();
+  const { t, locale } = useLang();
   const { profile } = useProfile();
   const [data,         setData]         = useState<DailyMetrics | null>(null);
   const [range,        setRange]        = useState<Range>(7);
@@ -247,7 +250,7 @@ export default function TrendsPage() {
   };
 
   const rows  = buildRows();
-  const dates = buildDateLabels(range);
+  const dates = buildDateLabels(range, locale);
   const isLoading = range === 7 ? !data : trendLoading;
 
   return (
@@ -263,7 +266,7 @@ export default function TrendsPage() {
             <button
               onClick={async () => {
                 setPdfLoading(true);
-                try { await exportWeeklyPDF(data); } finally { setPdfLoading(false); }
+                try { await exportWeeklyPDF(data, t, locale); } finally { setPdfLoading(false); }
               }}
               disabled={pdfLoading}
               className="ml-auto flex items-center gap-1.5 text-xs text-secondary hover:text-primary transition-colors disabled:opacity-50"

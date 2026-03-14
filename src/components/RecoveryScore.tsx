@@ -5,12 +5,7 @@ import type { RecoveryData } from '@/lib/types';
 import type { ProfileBenchmarks } from '@/lib/benchmarks';
 import { getCategoryColor } from '@/lib/scoring';
 import { formatPercentile } from '@/lib/benchmarks';
-
-const LABELS: Record<string, string> = {
-  green: 'Recuperado',
-  yellow: 'Moderado',
-  red: 'En Fatiga',
-};
+import { useLang } from '@/lib/i18n';
 
 interface Props {
   recovery: RecoveryData;
@@ -19,14 +14,20 @@ interface Props {
 }
 
 export default function RecoveryScore({ recovery, benchmarks }: Props) {
+  const { t } = useLang();
   const color = getCategoryColor(recovery.score);
+  const LABELS: Record<string, string> = {
+    green: t('common.recovered'),
+    yellow: t('common.moderate'),
+    red: t('common.fatigued'),
+  };
   const label = LABELS[recovery.category];
 
   return (
     <div className="flex flex-col items-center py-2">
       {/* Label above */}
       <p className="text-xs font-semibold tracking-widest text-secondary uppercase mb-3">
-        Recuperación
+        {t('trends.recovery')}
       </p>
 
       {/* Gauge */}
@@ -59,13 +60,13 @@ export default function RecoveryScore({ recovery, benchmarks }: Props) {
           benchmark={benchmarks?.hrv}
         />
         <MetricPill
-          label="FC Reposo"
+          label={t('trends.rhr')}
           value={`${recovery.restingHR} bpm`}
           color="#38bdf8"
           benchmark={benchmarks?.rhr}
         />
         <MetricPill
-          label="Sueño"
+          label={t('trends.sleep')}
           value={`${recovery.sleepScore}%`}
           color="#818cf8"
         />

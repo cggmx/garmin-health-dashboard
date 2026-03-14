@@ -22,6 +22,8 @@ const es = {
     optimal: 'Óptimo',
     danger: 'Peligro',
     balance: 'Equilibrado',
+    recovered: 'Recuperado',
+    fatigued: 'En Fatiga',
     units: {
       bpm: 'bpm',
       ms: 'ms',

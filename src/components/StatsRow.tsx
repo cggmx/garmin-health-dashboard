@@ -9,7 +9,7 @@ interface Props {
 }
 
 export default function StatsRow({ steps, calories }: Props) {
-  const { t } = useLang();
+  const { t, locale } = useLang();
   if (!steps && !calories) return null;
   return (
     <div className="flex gap-3">
@@ -18,7 +18,7 @@ export default function StatsRow({ steps, calories }: Props) {
           <Footprints size={18} className="text-battery flex-shrink-0" />
           <div>
             <p className="text-[10px] text-secondary uppercase tracking-widest">{t('statsRow.steps')}</p>
-            <p className="text-xl font-black text-primary">{steps.toLocaleString('es')}</p>
+            <p className="text-xl font-black text-primary">{steps.toLocaleString(locale)}</p>
           </div>
         </div>
       )}
@@ -27,7 +27,7 @@ export default function StatsRow({ steps, calories }: Props) {
           <Flame size={18} className="text-strain flex-shrink-0" />
           <div>
             <p className="text-[10px] text-secondary uppercase tracking-widest">{t('statsRow.calories')}</p>
-            <p className="text-xl font-black text-primary">{calories.toLocaleString('es')}</p>
+            <p className="text-xl font-black text-primary">{calories.toLocaleString(locale)}</p>
           </div>
         </div>
       )}
