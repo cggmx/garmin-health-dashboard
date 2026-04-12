@@ -7,10 +7,5 @@ node_modules/
 Thumbs.db
 .vercel
 
-# Private keys and credentials
-*.pem
-*.key
-credentials.json
-
 # Claude Code project settings (contain personal tokens)
 .claude/
